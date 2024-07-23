@@ -164,7 +164,9 @@ contract Marketplace is Ownable {
         address rentalProduct = RENTAL_PRODUCT_FACTORY.getRentalProduct(
             args.product
         );
-        require(address(rentalProduct) != address(0), "unsupported nft");
+        if(rentalProduct == address(0)) {
+            rentalProduct = RENTAL_PRODUCT_FACTORY.createRentalProduct(args.product);
+        }
         require(
             listings[rentalProduct][args.tokenId].status ==
                 ListingStatus.WithdrawnOrNotExist, // Never listed or withdrawn
