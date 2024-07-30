@@ -4,102 +4,19 @@ pragma solidity ^0.8.24;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {RentalProductFactory} from "./RentalProductFactory.sol";
-import {RentalProduct} from "./RentalProduct.sol";
+import {AccessTokenFactory} from "./AccessTokenFactory.sol";
+import {AccessToken} from "./AccessToken.sol";
 import {IProduct} from "./interfaces/IProduct.sol";
+import {IMarketplace} from "./interfaces/IMarketplace.sol";
 
-contract Marketplace is Ownable {
-    // Statuses of a listing. WithdrawnOrNotExist, which is 0, is effectively the same as never listed before.
-    enum ListingStatus {
-        WithdrawnOrNotExist,
-        Listing,
-        Delisted
-    }
-
-    // Statuses of a rental. EndedOrNotExist, which is 0, is effectively the same as never exist before.
-    enum RentalStatus {
-        EndedOrNotExist,
-        Renting
-    }
-
-    struct ListingInfo {
-        address owner;
-        uint256 minRentalDays;
-        uint256 maxRentalDays;
-        address rentCurrency;
-        uint256 dailyRent;
-        address payable rentRecipient;
-        ListingStatus status;
-    }
-
-    struct RentalInfo {
-        uint256 startTime;
-        uint256 endTime;
-        uint256 rentalDays;
-        address rentCurrency;
-        uint256 dailyRent;
-        uint256 totalPaidRent;
-        RentalStatus status;
-    }
-
-    struct ListArgs {
-        address product;
-        uint256 tokenId;
-        uint256 minRentalDays;
-        uint256 maxRentalDays;
-        address rentCurrency;
-        uint256 dailyRent;
-        address rentRecipient;
-    }
-
-    struct DelistArgs {
-        address payable rentalProduct;
-        uint256 tokenId;
-    }
-
-    struct RelistArgs {
-        address payable rentalProduct;
-        uint256 tokenId;
-        uint256 minRentalDays;
-        uint256 maxRentalDays;
-        address rentCurrency;
-        uint256 dailyRent;
-        address payable rentRecipient;
-    }
-
-    struct RentArgs {
-        address payable rentalProduct;
-        uint256 tokenId;
-        address tenant;
-        uint256 rentalDays;
-        uint256 prepaidRent;
-    }
-
-    struct PayRentArgs {
-        address payable rentalProduct;
-        uint256 tokenId;
-        address tenant;
-        uint256 rent;
-    }
-
-    struct EndLeaseArgs {
-        address payable rentalProduct;
-        uint256 tokenId;
-        address tenant;
-    }
-
-    struct WithdrawArgs {
-        address payable rentalProduct;
-        uint256 tokenId;
-    }
-
+contract Marketplace is IMarketplace, Ownable {
     using SafeERC20 for IERC20;
 
-    address private constant NATIVE_TOKEN = address(1);
+    address private constant NATIVE_TOKEN = address(0);
 
     uint256 public constant MAX_POINTS = 10000;
 
-    RentalProductFactory public immutable RENTAL_PRODUCT_FACTORY;
+    AccessTokenFactory public immutable ACCESS_TOKEN_FACTORY;
 
     address payable private _treasury;
 
@@ -111,24 +28,24 @@ contract Marketplace is Ownable {
     mapping(address => bool) public supportedRentCurrencies;
 
     /**
-     * @notice rental product => token id => listing info
+     * @notice access token => token id => listing info
      */
     mapping(address => mapping(uint256 => ListingInfo)) public listings;
 
     /**
-     * @notice rental product => token id => tenant => rent info
+     * @notice access token => token id => tenant => rent info
      */
     mapping(address => mapping(uint256 => mapping(address => RentalInfo)))
         public rentals;
 
     constructor(
         address initialOwner,
-        address rentalProductFactory,
+        address accessTokenFactory,
         address[] memory rentCurrencies,
         address payable treasury,
         uint256 feePoints
     ) Ownable(initialOwner) {
-        RENTAL_PRODUCT_FACTORY = RentalProductFactory(rentalProductFactory);
+        ACCESS_TOKEN_FACTORY = AccessTokenFactory(accessTokenFactory);
         for (uint i = 0; i < rentCurrencies.length; i++) {
             supportedRentCurrencies[rentCurrencies[i]] = true;
         }
@@ -161,14 +78,14 @@ contract Marketplace is Ownable {
     }
 
     function list(ListArgs memory args) public {
-        address rentalProduct = RENTAL_PRODUCT_FACTORY.getRentalProduct(
+        address accessToken = ACCESS_TOKEN_FACTORY.getAccessToken(
             args.product
         );
-        if(rentalProduct == address(0)) {
-            rentalProduct = RENTAL_PRODUCT_FACTORY.createRentalProduct(args.product);
+        if(accessToken == address(0)) {
+            accessToken = ACCESS_TOKEN_FACTORY.createAccessToken(args.product);
         }
         require(
-            listings[rentalProduct][args.tokenId].status ==
+            listings[accessToken][args.tokenId].status ==
                 ListingStatus.WithdrawnOrNotExist, // Never listed or withdrawn
             "token already listed"
         );
@@ -182,7 +99,7 @@ contract Marketplace is Ownable {
             "unsupported rent currency"
         );
 
-        listings[rentalProduct][args.tokenId] = ListingInfo({
+        listings[accessToken][args.tokenId] = ListingInfo({
             owner: msg.sender,
             minRentalDays: args.minRentalDays,
             maxRentalDays: args.maxRentalDays,
@@ -200,7 +117,7 @@ contract Marketplace is Ownable {
     }
 
     function delist(DelistArgs memory args) public {
-        ListingInfo storage listing = listings[args.rentalProduct][
+        ListingInfo storage listing = listings[args.accessToken][
             args.tokenId
         ];
         require(listing.owner == msg.sender, "not listing owner");
@@ -208,7 +125,7 @@ contract Marketplace is Ownable {
     }
 
     function relist(RelistArgs memory args) public {
-        ListingInfo storage listing = listings[args.rentalProduct][
+        ListingInfo storage listing = listings[args.accessToken][
             args.tokenId
         ];
         require(listing.owner == msg.sender, "not listing owner");
@@ -232,12 +149,12 @@ contract Marketplace is Ownable {
 
     function rent(RentArgs memory args) public payable {
         require(
-            rentals[args.rentalProduct][args.tokenId][args.tenant].status ==
+            rentals[args.accessToken][args.tokenId][args.tenant].status ==
                 RentalStatus.EndedOrNotExist,
             "existing rental"
         );
 
-        ListingInfo memory listing = listings[args.rentalProduct][args.tokenId];
+        ListingInfo memory listing = listings[args.accessToken][args.tokenId];
         require(
             listing.minRentalDays <= args.rentalDays &&
                 args.rentalDays <= listing.maxRentalDays,
@@ -248,7 +165,7 @@ contract Marketplace is Ownable {
             "insufficient prepaid rent"
         );
 
-        rentals[args.rentalProduct][args.tokenId][args.tenant] = RentalInfo({
+        rentals[args.accessToken][args.tokenId][args.tenant] = RentalInfo({
             startTime: block.timestamp,
             endTime: block.timestamp + args.rentalDays * 1 days,
             rentalDays: args.rentalDays,
@@ -261,19 +178,19 @@ contract Marketplace is Ownable {
         // Pay rent
         _payRent(
             listing,
-            rentals[args.rentalProduct][args.tokenId][args.tenant],
+            rentals[args.accessToken][args.tokenId][args.tenant],
             args.prepaidRent
         );
-        // Add the tenant to the rental token
-        RentalProduct(payable(args.rentalProduct)).addUser(
-            args.tokenId,
-            args.tenant
+        // Mint access token to tenant
+        AccessToken(args.accessToken).mint(
+            args.tenant,
+            args.tokenId
         );
     }
 
     function payRent(PayRentArgs memory args) public payable {
-        ListingInfo memory listing = listings[args.rentalProduct][args.tokenId];
-        RentalInfo storage rental = rentals[args.rentalProduct][args.tokenId][
+        ListingInfo memory listing = listings[args.accessToken][args.tokenId];
+        RentalInfo storage rental = rentals[args.accessToken][args.tokenId][
             args.tenant
         ];
         require(
@@ -287,7 +204,7 @@ contract Marketplace is Ownable {
     }
 
     function endLease(EndLeaseArgs memory args) public {
-        RentalInfo storage rental = rentals[args.rentalProduct][args.tokenId][
+        RentalInfo storage rental = rentals[args.accessToken][args.tokenId][
             args.tenant
         ];
         // The lease can be ended only if the term is over or the rent is insufficient
@@ -299,24 +216,23 @@ contract Marketplace is Ownable {
             "cannot end lease"
         );
 
-        // Remove the tenant from the rental product
-        RentalProduct(args.rentalProduct).revokeUser(args.tokenId);
+        // Burn tenant's access token
+        AccessToken(args.accessToken).burn(args.tokenId);
         rental.status = RentalStatus.EndedOrNotExist;
     }
 
     function withdraw(WithdrawArgs memory args) public {
-        ListingInfo storage listing = listings[args.rentalProduct][
+        ListingInfo storage listing = listings[args.accessToken][
             args.tokenId
         ];
         require(listing.owner == msg.sender, "not listing owner");
         require(
-            RentalProduct(args.rentalProduct).isUser(args.tokenId, address(0)),
-            "rental product has user"
+            AccessToken(args.accessToken).ownerOf(args.tokenId) == address(0),
+            "access token has tenant"
         );
         listing.status = ListingStatus.WithdrawnOrNotExist;
 
-        // fallback call: Transfer the nft back to the owner
-        IProduct(args.rentalProduct).safeTransferFrom(
+        (AccessToken(args.accessToken).PRODUCT()).safeTransferFrom(
             address(this),
             listing.owner,
             args.tokenId
