@@ -16,7 +16,7 @@ contract AccessToken is ERC721 {
     }
 
     modifier onlyTokenOwner(uint256 tokenId) {
-        require(msg.sender == PRODUCT.ownerOf(tokenId), "not token owner");
+        require(msg.sender == PRODUCT.ownerOf(tokenId), "not product owner");
         _;
     }
 
@@ -29,5 +29,9 @@ contract AccessToken is ERC721 {
 
     function burn(uint256 tokenId) external onlyTokenOwner(tokenId) {
         _burn(tokenId);
+    }
+
+    function isExist(uint256 tokenId) external view returns (bool) {
+        return _ownerOf(tokenId) != address(0);
     }
 }

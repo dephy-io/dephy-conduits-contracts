@@ -30,13 +30,13 @@ contract Marketplace is IMarketplace, Ownable {
     /**
      * @notice access token => token id => listing info
      */
-    mapping(address => mapping(uint256 => ListingInfo)) public listings;
+    mapping(address => mapping(uint256 => ListingInfo)) internal _listings;
 
     /**
      * @notice access token => token id => tenant => rent info
      */
     mapping(address => mapping(uint256 => mapping(address => RentalInfo)))
-        public rentals;
+        internal _rentals;
 
     constructor(
         address initialOwner,
@@ -51,6 +51,14 @@ contract Marketplace is IMarketplace, Ownable {
         }
         _treasury = treasury;
         _feePoints = feePoints;
+    }
+
+    function getListingInfo(address accessToken, uint256 tokenId) external view returns (ListingInfo memory) {
+        return _listings[accessToken][tokenId];
+    }
+
+    function getRentalInfo(address accessToken, uint256 tokenId, address tenant) external view returns (RentalInfo memory) {
+        return _rentals[accessToken][tokenId][tenant];
     }
 
     function setFeePoints(uint256 feePoints) external onlyOwner {
@@ -85,7 +93,7 @@ contract Marketplace is IMarketplace, Ownable {
             accessToken = ACCESS_TOKEN_FACTORY.createAccessToken(args.product);
         }
         require(
-            listings[accessToken][args.tokenId].status ==
+            _listings[accessToken][args.tokenId].status ==
                 ListingStatus.WithdrawnOrNotExist, // Never listed or withdrawn
             "token already listed"
         );
@@ -95,11 +103,11 @@ contract Marketplace is IMarketplace, Ownable {
             "invalid maximum rental days"
         );
         require(
-            supportedRentCurrencies[args.rentCurrency],
+            args.rentCurrency == NATIVE_TOKEN || supportedRentCurrencies[args.rentCurrency],
             "unsupported rent currency"
         );
 
-        listings[accessToken][args.tokenId] = ListingInfo({
+        _listings[accessToken][args.tokenId] = ListingInfo({
             owner: msg.sender,
             minRentalDays: args.minRentalDays,
             maxRentalDays: args.maxRentalDays,
@@ -117,7 +125,7 @@ contract Marketplace is IMarketplace, Ownable {
     }
 
     function delist(DelistArgs memory args) public {
-        ListingInfo storage listing = listings[args.accessToken][
+        ListingInfo storage listing = _listings[args.accessToken][
             args.tokenId
         ];
         require(listing.owner == msg.sender, "not listing owner");
@@ -125,7 +133,7 @@ contract Marketplace is IMarketplace, Ownable {
     }
 
     function relist(RelistArgs memory args) public {
-        ListingInfo storage listing = listings[args.accessToken][
+        ListingInfo storage listing = _listings[args.accessToken][
             args.tokenId
         ];
         require(listing.owner == msg.sender, "not listing owner");
@@ -135,7 +143,7 @@ contract Marketplace is IMarketplace, Ownable {
             "invalid maximum rental days"
         );
         require(
-            supportedRentCurrencies[args.rentCurrency],
+            args.rentCurrency == NATIVE_TOKEN || supportedRentCurrencies[args.rentCurrency],
             "unsupported rent currency"
         );
 
@@ -149,12 +157,12 @@ contract Marketplace is IMarketplace, Ownable {
 
     function rent(RentArgs memory args) public payable {
         require(
-            rentals[args.accessToken][args.tokenId][args.tenant].status ==
+            _rentals[args.accessToken][args.tokenId][args.tenant].status ==
                 RentalStatus.EndedOrNotExist,
             "existing rental"
         );
 
-        ListingInfo memory listing = listings[args.accessToken][args.tokenId];
+        ListingInfo memory listing = _listings[args.accessToken][args.tokenId];
         require(
             listing.minRentalDays <= args.rentalDays &&
                 args.rentalDays <= listing.maxRentalDays,
@@ -165,7 +173,7 @@ contract Marketplace is IMarketplace, Ownable {
             "insufficient prepaid rent"
         );
 
-        rentals[args.accessToken][args.tokenId][args.tenant] = RentalInfo({
+        _rentals[args.accessToken][args.tokenId][args.tenant] = RentalInfo({
             startTime: block.timestamp,
             endTime: block.timestamp + args.rentalDays * 1 days,
             rentalDays: args.rentalDays,
@@ -178,7 +186,7 @@ contract Marketplace is IMarketplace, Ownable {
         // Pay rent
         _payRent(
             listing,
-            rentals[args.accessToken][args.tokenId][args.tenant],
+            _rentals[args.accessToken][args.tokenId][args.tenant],
             args.prepaidRent
         );
         // Mint access token to tenant
@@ -189,8 +197,8 @@ contract Marketplace is IMarketplace, Ownable {
     }
 
     function payRent(PayRentArgs memory args) public payable {
-        ListingInfo memory listing = listings[args.accessToken][args.tokenId];
-        RentalInfo storage rental = rentals[args.accessToken][args.tokenId][
+        ListingInfo memory listing = _listings[args.accessToken][args.tokenId];
+        RentalInfo storage rental = _rentals[args.accessToken][args.tokenId][
             args.tenant
         ];
         require(
@@ -204,7 +212,7 @@ contract Marketplace is IMarketplace, Ownable {
     }
 
     function endLease(EndLeaseArgs memory args) public {
-        RentalInfo storage rental = rentals[args.accessToken][args.tokenId][
+        RentalInfo storage rental = _rentals[args.accessToken][args.tokenId][
             args.tenant
         ];
         // The lease can be ended only if the term is over or the rent is insufficient
@@ -222,17 +230,17 @@ contract Marketplace is IMarketplace, Ownable {
     }
 
     function withdraw(WithdrawArgs memory args) public {
-        ListingInfo storage listing = listings[args.accessToken][
+        ListingInfo storage listing = _listings[args.accessToken][
             args.tokenId
         ];
         require(listing.owner == msg.sender, "not listing owner");
         require(
-            AccessToken(args.accessToken).ownerOf(args.tokenId) == address(0),
+            !AccessToken(args.accessToken).isExist(args.tokenId),
             "access token has tenant"
         );
         listing.status = ListingStatus.WithdrawnOrNotExist;
 
-        (AccessToken(args.accessToken).PRODUCT()).safeTransferFrom(
+        (AccessToken(args.accessToken).PRODUCT()).transferFrom(
             address(this),
             listing.owner,
             args.tokenId

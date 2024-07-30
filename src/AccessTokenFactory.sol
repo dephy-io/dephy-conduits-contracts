@@ -19,7 +19,7 @@ contract AccessTokenFactory {
         AccessToken accessToken = new AccessToken(
             IProduct(productAddress),
             ERC721(productAddress).name(),
-            ERC721(productAddress).symbol()
+            string(abi.encodePacked("AC.", ERC721(productAddress).symbol()))
         );
         getAccessToken[productAddress] = address(accessToken);
         return address(accessToken);
