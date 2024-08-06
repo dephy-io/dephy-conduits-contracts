@@ -12,15 +12,15 @@ import {IMarketplace} from "./interfaces/IMarketplace.sol";
 contract Marketplace is IMarketplace, Ownable {
     using SafeERC20 for IERC20;
 
-    address private constant NATIVE_TOKEN = address(0);
+    address public constant NATIVE_TOKEN = address(0);
 
     uint256 public constant MAX_POINTS = 10000;
 
     AccessTokenFactory public immutable ACCESS_TOKEN_FACTORY;
 
-    address payable private _treasury;
+    address payable internal _treasury;
 
-    uint256 private _feePoints;
+    uint256 internal _feePoints;
 
     /**
      * @notice rent currency => is supported
