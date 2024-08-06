@@ -14,3 +14,7 @@ docs/
 .env
 
 dependencies/
+
+node_modules
+
+bun.lockb
