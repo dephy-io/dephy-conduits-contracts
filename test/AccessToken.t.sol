@@ -2,8 +2,8 @@
 pragma solidity ^0.8.24;
 
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
-import {AccessToken} from "../src/AccessToken.sol";
-import {IProduct} from "../src/interfaces/IProduct.sol";
+import {AccessToken} from "../contracts/AccessToken.sol";
+import {IProduct} from "../contracts/interfaces/IProduct.sol";
 import {MockProduct} from "./mocks/MockProduct.sol";
 import "forge-std/src/Test.sol";
 

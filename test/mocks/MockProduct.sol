@@ -5,7 +5,7 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {ERC721Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import {IProduct} from "../../src/interfaces/IProduct.sol";
+import {IProduct} from "../../contracts/interfaces/IProduct.sol";
 
 contract MockProduct is
     Initializable,

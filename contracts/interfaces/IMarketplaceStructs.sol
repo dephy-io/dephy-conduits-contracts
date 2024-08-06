@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-interface IMarketplace {
+interface IMarketplaceStructs {
     // Statuses of a listing. WithdrawnOrNotExist, which is 0, is effectively the same as never listed before.
     enum ListingStatus {
         WithdrawnOrNotExist,
