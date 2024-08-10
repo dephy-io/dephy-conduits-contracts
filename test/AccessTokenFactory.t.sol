@@ -3,9 +3,9 @@ pragma solidity ^0.8.24;
 
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import {AccessTokenFactory} from "../src/AccessTokenFactory.sol";
-import {AccessToken} from "../src/AccessToken.sol";
-import {IProduct} from "../src/interfaces/IProduct.sol";
+import {AccessTokenFactory} from "../contracts/AccessTokenFactory.sol";
+import {AccessToken} from "../contracts/AccessToken.sol";
+import {IProduct} from "../contracts/interfaces/IProduct.sol";
 import {MockProduct} from "./mocks/MockProduct.sol";
 import "forge-std/src/Test.sol";
 

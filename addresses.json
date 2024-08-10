@@ -1,0 +1,6 @@
+{
+    "BNBTestnet": {
+        "AccessTokenFactory": "0x35a8483444947B2166Aa85837F97FaEf122f5ebb",
+        "Marketplace": "0x647d77324E241709BaF63D7f96F0C19ecA06E2e0"
+    }
+}

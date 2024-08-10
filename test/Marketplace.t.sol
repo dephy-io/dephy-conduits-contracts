@@ -3,11 +3,11 @@ pragma solidity ^0.8.24;
 
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import {AccessTokenFactory} from "../src/AccessTokenFactory.sol";
-import {IMarketplace} from "../src/interfaces/IMarketplace.sol";
-import {Marketplace} from "../src/Marketplace.sol";
-import {AccessToken} from "../src/AccessToken.sol";
-import {IProduct} from "../src/interfaces/IProduct.sol";
+import {AccessTokenFactory} from "../contracts/AccessTokenFactory.sol";
+import {IMarketplaceStructs} from "../contracts/interfaces/IMarketplaceStructs.sol";
+import {Marketplace} from "../contracts/Marketplace.sol";
+import {AccessToken} from "../contracts/AccessToken.sol";
+import {IProduct} from "../contracts/interfaces/IProduct.sol";
 import {MockProduct} from "./mocks/MockProduct.sol";
 import "forge-std/src/Test.sol";
 
@@ -43,7 +43,7 @@ contract AccessTokenFactoryTest is Test {
         uint256 tokenId = product.mint(address(this));
 
         // List the product token on the marketplace
-        IMarketplace.ListArgs memory args = IMarketplace.ListArgs({
+        IMarketplaceStructs.ListArgs memory args = IMarketplaceStructs.ListArgs({
             product: productAddress,
             tokenId: tokenId,
             minRentalDays: 1,
@@ -57,7 +57,7 @@ contract AccessTokenFactoryTest is Test {
         marketplace.list(args);
 
         // Check that the token is listed
-        IMarketplace.ListingInfo memory listing = marketplace.getListingInfo(
+        IMarketplaceStructs.ListingInfo memory listing = marketplace.getListingInfo(
             address(factory.getAccessToken(productAddress)),
             tokenId
         );
@@ -68,7 +68,7 @@ contract AccessTokenFactoryTest is Test {
         assertEq(listing.dailyRent, 1 ether);
         assertEq(
             uint256(listing.status),
-            uint256(IMarketplace.ListingStatus.Listing)
+            uint256(IMarketplaceStructs.ListingStatus.Listing)
         );
     }
 
@@ -77,7 +77,7 @@ contract AccessTokenFactoryTest is Test {
         uint256 tokenId = product.mint(address(this));
 
         // List the product token on the marketplace
-        IMarketplace.ListArgs memory listArgs = IMarketplace.ListArgs({
+        IMarketplaceStructs.ListArgs memory listArgs = IMarketplaceStructs.ListArgs({
             product: productAddress,
             tokenId: tokenId,
             minRentalDays: 1,
@@ -91,7 +91,7 @@ contract AccessTokenFactoryTest is Test {
         marketplace.list(listArgs);
 
         // Delist the token
-        IMarketplace.DelistArgs memory delistArgs = IMarketplace.DelistArgs({
+        IMarketplaceStructs.DelistArgs memory delistArgs = IMarketplaceStructs.DelistArgs({
             accessToken: payable(factory.getAccessToken(productAddress)),
             tokenId: tokenId
         });
@@ -99,13 +99,13 @@ contract AccessTokenFactoryTest is Test {
         marketplace.delist(delistArgs);
 
         // Check that the token is delisted
-        IMarketplace.ListingInfo memory listing = marketplace.getListingInfo(
+        IMarketplaceStructs.ListingInfo memory listing = marketplace.getListingInfo(
             address(factory.getAccessToken(productAddress)),
             tokenId
         );
         assertEq(
             uint256(listing.status),
-            uint256(IMarketplace.ListingStatus.Delisted)
+            uint256(IMarketplaceStructs.ListingStatus.Delisted)
         );
     }
 
@@ -117,7 +117,7 @@ contract AccessTokenFactoryTest is Test {
         vm.deal(tenant, 10 ether);
 
         // List the product token on the marketplace
-        IMarketplace.ListArgs memory listArgs = IMarketplace.ListArgs({
+        IMarketplaceStructs.ListArgs memory listArgs = IMarketplaceStructs.ListArgs({
             product: productAddress,
             tokenId: tokenId,
             minRentalDays: 1,
@@ -131,7 +131,7 @@ contract AccessTokenFactoryTest is Test {
         marketplace.list(listArgs);
 
         // Rent the token
-        IMarketplace.RentArgs memory rentArgs = IMarketplace.RentArgs({
+        IMarketplaceStructs.RentArgs memory rentArgs = IMarketplaceStructs.RentArgs({
             accessToken: factory.getAccessToken(productAddress),
             tokenId: tokenId,
             tenant: tenant,
@@ -143,7 +143,7 @@ contract AccessTokenFactoryTest is Test {
         marketplace.rent{value: 5 ether}(rentArgs);
 
         // Check that the token is rented
-        IMarketplace.RentalInfo memory rental = marketplace.getRentalInfo(
+        IMarketplaceStructs.RentalInfo memory rental = marketplace.getRentalInfo(
             address(factory.getAccessToken(productAddress)),
             tokenId,
             tenant
@@ -154,7 +154,7 @@ contract AccessTokenFactoryTest is Test {
         assertEq(rental.dailyRent, 1 ether);
         assertEq(
             uint256(rental.status),
-            uint256(IMarketplace.RentalStatus.Renting)
+            uint256(IMarketplaceStructs.RentalStatus.Renting)
         );
     }
 
@@ -166,7 +166,7 @@ contract AccessTokenFactoryTest is Test {
         vm.deal(tenant, 20 ether);
 
         // List the product token on the marketplace
-        IMarketplace.ListArgs memory listArgs = IMarketplace.ListArgs({
+        IMarketplaceStructs.ListArgs memory listArgs = IMarketplaceStructs.ListArgs({
             product: productAddress,
             tokenId: tokenId,
             minRentalDays: 1,
@@ -180,7 +180,7 @@ contract AccessTokenFactoryTest is Test {
         marketplace.list(listArgs);
 
         // Rent the token
-        IMarketplace.RentArgs memory rentArgs = IMarketplace.RentArgs({
+        IMarketplaceStructs.RentArgs memory rentArgs = IMarketplaceStructs.RentArgs({
             accessToken: factory.getAccessToken(productAddress),
             tokenId: tokenId,
             tenant: tenant,
@@ -191,7 +191,7 @@ contract AccessTokenFactoryTest is Test {
         vm.prank(tenant);
         marketplace.rent{value: 5 ether}(rentArgs);
 
-        IMarketplace.RentalInfo memory rental = marketplace.getRentalInfo(
+        IMarketplaceStructs.RentalInfo memory rental = marketplace.getRentalInfo(
             address(factory.getAccessToken(productAddress)),
             tokenId,
             tenant
@@ -203,11 +203,11 @@ contract AccessTokenFactoryTest is Test {
         assertEq(rental.totalPaidRent, 5 ether);
         assertEq(
             uint256(rental.status),
-            uint256(IMarketplace.RentalStatus.Renting)
+            uint256(IMarketplaceStructs.RentalStatus.Renting)
         );
 
         // Pay additional rent
-        IMarketplace.PayRentArgs memory payRentArgs = IMarketplace.PayRentArgs({
+        IMarketplaceStructs.PayRentArgs memory payRentArgs = IMarketplaceStructs.PayRentArgs({
             accessToken: factory.getAccessToken(productAddress),
             tokenId: tokenId,
             tenant: tenant,
@@ -235,7 +235,7 @@ contract AccessTokenFactoryTest is Test {
         vm.deal(tenant, 10 ether);
 
         // List the product token on the marketplace
-        IMarketplace.ListArgs memory listArgs = IMarketplace.ListArgs({
+        IMarketplaceStructs.ListArgs memory listArgs = IMarketplaceStructs.ListArgs({
             product: productAddress,
             tokenId: tokenId,
             minRentalDays: 1,
@@ -249,7 +249,7 @@ contract AccessTokenFactoryTest is Test {
         marketplace.list(listArgs);
 
         // Rent the token
-        IMarketplace.RentArgs memory rentArgs = IMarketplace.RentArgs({
+        IMarketplaceStructs.RentArgs memory rentArgs = IMarketplaceStructs.RentArgs({
             accessToken: factory.getAccessToken(productAddress),
             tokenId: tokenId,
             tenant: tenant,
@@ -264,7 +264,7 @@ contract AccessTokenFactoryTest is Test {
         vm.warp(block.timestamp + 6 days);
 
         // End the lease
-        IMarketplace.EndLeaseArgs memory endLeaseArgs = IMarketplace
+        IMarketplaceStructs.EndLeaseArgs memory endLeaseArgs = IMarketplaceStructs
             .EndLeaseArgs({
                 accessToken: factory.getAccessToken(productAddress),
                 tokenId: tokenId,
@@ -275,14 +275,14 @@ contract AccessTokenFactoryTest is Test {
         marketplace.endLease(endLeaseArgs);
 
         // Check that the lease is ended
-        IMarketplace.RentalInfo memory rental = marketplace.getRentalInfo(
+        IMarketplaceStructs.RentalInfo memory rental = marketplace.getRentalInfo(
             address(factory.getAccessToken(productAddress)),
             tokenId,
             tenant
         );
         assertEq(
             uint256(rental.status),
-            uint256(IMarketplace.RentalStatus.EndedOrNotExist)
+            uint256(IMarketplaceStructs.RentalStatus.EndedOrNotExist)
         );
     }
 
@@ -291,7 +291,7 @@ contract AccessTokenFactoryTest is Test {
         uint256 tokenId = product.mint(address(this));
 
         // List the product token on the marketplace
-        IMarketplace.ListArgs memory listArgs = IMarketplace.ListArgs({
+        IMarketplaceStructs.ListArgs memory listArgs = IMarketplaceStructs.ListArgs({
             product: productAddress,
             tokenId: tokenId,
             minRentalDays: 1,
@@ -305,7 +305,7 @@ contract AccessTokenFactoryTest is Test {
         marketplace.list(listArgs);
 
         // Delist the token
-        IMarketplace.DelistArgs memory delistArgs = IMarketplace.DelistArgs({
+        IMarketplaceStructs.DelistArgs memory delistArgs = IMarketplaceStructs.DelistArgs({
             accessToken: payable(factory.getAccessToken(productAddress)),
             tokenId: tokenId
         });
@@ -313,7 +313,7 @@ contract AccessTokenFactoryTest is Test {
         marketplace.delist(delistArgs);
 
         // Withdraw the token
-        IMarketplace.WithdrawArgs memory withdrawArgs = IMarketplace
+        IMarketplaceStructs.WithdrawArgs memory withdrawArgs = IMarketplaceStructs
             .WithdrawArgs({
                 accessToken: factory.getAccessToken(productAddress),
                 tokenId: tokenId
@@ -322,13 +322,13 @@ contract AccessTokenFactoryTest is Test {
         marketplace.withdraw(withdrawArgs);
 
         // Check that the token is withdrawn
-        IMarketplace.ListingInfo memory listing = marketplace.getListingInfo(
+        IMarketplaceStructs.ListingInfo memory listing = marketplace.getListingInfo(
             address(factory.getAccessToken(productAddress)),
             tokenId
         );
         assertEq(
             uint256(listing.status),
-            uint256(IMarketplace.ListingStatus.WithdrawnOrNotExist)
+            uint256(IMarketplaceStructs.ListingStatus.WithdrawnOrNotExist)
         );
     }
 
