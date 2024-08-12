@@ -107,6 +107,20 @@ contract AccessTokenFactoryTest is Test {
             uint256(listing.status),
             uint256(IMarketplaceStructs.ListingStatus.Delisted)
         );
+
+        address tenant = makeAddr("tenant");
+        vm.deal(tenant, 10 ether);
+        IMarketplaceStructs.RentArgs memory rentArgs = IMarketplaceStructs.RentArgs({
+            accessToken: factory.getAccessToken(productAddress),
+            tokenId: tokenId,
+            tenant: tenant,
+            rentalDays: 5,
+            prepaidRent: 5 ether
+        });
+
+        vm.prank(tenant);
+        vm.expectRevert("not listing");
+        marketplace.rent{value: 5 ether}(rentArgs);
     }
 
     function testRent() public {

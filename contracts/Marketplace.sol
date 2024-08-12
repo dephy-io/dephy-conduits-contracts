@@ -221,6 +221,7 @@ contract Marketplace is IMarketplace, Ownable {
         );
 
         ListingInfo memory listing = _listings[args.accessToken][args.tokenId];
+        require(listing.status == ListingStatus.Listing, "not listing");
         require(
             listing.minRentalDays <= args.rentalDays &&
                 args.rentalDays <= listing.maxRentalDays,
