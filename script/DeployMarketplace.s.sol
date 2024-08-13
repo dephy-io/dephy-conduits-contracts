@@ -13,7 +13,7 @@ contract DeployMarketplace is Script {
 
     function setUp() public {
         deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        accessTokenFactory = 0x35a8483444947B2166Aa85837F97FaEf122f5ebb;
+        accessTokenFactory = 0x34D22CbdCD41E06af4BDB87BFc67c58E83DcE922;
         treasury = 0x3F3786B67DC1874C3Bd8e8CD61F5eea87604470F;
         feePoints = 100; // 100/10000 = 10%
     }
