@@ -17,6 +17,7 @@ const ethers_1 = require("ethers");
 const AccessTokenFactory_json_1 = __importDefault(require("./abi/AccessTokenFactory.json"));
 const AccessToken_json_1 = __importDefault(require("./abi/AccessToken.json"));
 const ProductFactory_json_1 = __importDefault(require("./abi/ProductFactory.json"));
+const Product_json_1 = __importDefault(require("./abi/Product.json"));
 const PORT = process.env.PORT || 3155;
 const PRODUCT_FACTORY = "0x1dFC014B1852f0c81d11A3535335f1984cD4CE37";
 const ACCESS_TOKEN_FACTORY = "0x34D22CbdCD41E06af4BDB87BFc67c58E83DcE922";
@@ -44,7 +45,7 @@ app.get("/access-control", (req, res) => __awaiter(void 0, void 0, void 0, funct
             result = false;
         }
         else {
-            const productContract = new ethers_1.ethers.Contract(product, AccessToken_json_1.default, provider);
+            const productContract = new ethers_1.ethers.Contract(product, Product_json_1.default, provider);
             const owner = yield productContract.ownerOf(tokenId);
             if (owner === user) {
                 result = true;

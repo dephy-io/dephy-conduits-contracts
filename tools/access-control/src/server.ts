@@ -49,7 +49,7 @@ app.get("/access-control", async (req, res) => {
     } else {
       const productContract = new ethers.Contract(
         product,
-        AccessTokenAbi,
+        ProductAbi,
         provider
       );
       const owner = await productContract.ownerOf(tokenId);
