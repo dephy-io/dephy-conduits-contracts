@@ -12,8 +12,8 @@ contract CreateAccessToken is Script {
 
     function setUp() public {
         deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        accessTokenFactory = AccessTokenFactory(0x35a8483444947B2166Aa85837F97FaEf122f5ebb);
-        productFactory = IProductFactory(0x8E360F40c7875e096e0DbFe0cC01d1db5aFB78B6);
+        accessTokenFactory = AccessTokenFactory(0x34D22CbdCD41E06af4BDB87BFc67c58E83DcE922);
+        productFactory = IProductFactory(0x1dFC014B1852f0c81d11A3535335f1984cD4CE37);
         device = 0xA7fE098F2D4D2cD6bA158E5470d9231AC223bA06;        // set your device here
     }
 

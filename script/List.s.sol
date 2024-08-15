@@ -16,8 +16,8 @@ contract List is Script {
 
     function setUp() public {
         deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        marketplace = Marketplace(0x647d77324E241709BaF63D7f96F0C19ecA06E2e0);
-        productFactory = IProductFactory(0x8E360F40c7875e096e0DbFe0cC01d1db5aFB78B6);
+        marketplace = Marketplace(0xb6b95a93eace5cF8b2879D5EE28D5625DD963Ae0);
+        productFactory = IProductFactory(0x1dFC014B1852f0c81d11A3535335f1984cD4CE37);
         device = 0xA7fE098F2D4D2cD6bA158E5470d9231AC223bA06;        // set your device here
         deviceBinding = productFactory.getDeviceBinding(device);
         listArgs = IMarketplaceStructs.ListArgs({
