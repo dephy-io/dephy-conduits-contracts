@@ -27,14 +27,14 @@ contract Marketplace is IMarketplace, Ownable {
     mapping(address => bool) public supportedRentCurrencies;
 
     /**
-     * @notice access token => token id => listing info
+     * @notice device => listing info
      */
     mapping(address => ListingInfo) internal _listings;
 
     /**
-     * @notice access token => token id => tenant => rent info
+     * @notice device => rent info
      */
-    mapping(address => mapping(address => RentalInfo)) internal _rentals;
+    mapping(address => RentalInfo) internal _rentals;
 
     constructor(
         address initialOwner,
@@ -64,10 +64,9 @@ contract Marketplace is IMarketplace, Ownable {
      * @inheritdoc IMarketplace
      */
     function getRentalInfo(
-        address device,
-        address tenant
+        address device
     ) external view returns (RentalInfo memory) {
-        return _rentals[device][tenant];
+        return _rentals[device];
     }
 
     /**
@@ -212,7 +211,7 @@ contract Marketplace is IMarketplace, Ownable {
         uint256 prepaidRent
     ) public payable {
         require(
-            _rentals[device][tenant].status == RentalStatus.EndedOrNotExist,
+            _rentals[device].status == RentalStatus.EndedOrNotExist,
             "existing rental"
         );
 
@@ -228,9 +227,15 @@ contract Marketplace is IMarketplace, Ownable {
             "insufficient prepaid rent"
         );
 
-        _rentals[device][tenant] = RentalInfo({
-            startTime: block.timestamp,
-            endTime: block.timestamp + rentalDays * 1 days,
+        // Mint app device to tenant
+        uint256 instanceId = APPLICATION.mint(tenant, device);
+
+        uint256 startTime = block.timestamp;
+        uint256 endTime = block.timestamp + rentalDays * 1 days;
+        _rentals[device] = RentalInfo({
+            instanceId: instanceId,
+            startTime: startTime,
+            endTime: endTime,
             rentalDays: rentalDays,
             rentCurrency: listing.rentCurrency,
             dailyRent: listing.dailyRent,
@@ -239,11 +244,9 @@ contract Marketplace is IMarketplace, Ownable {
         });
 
         // Pay rent
-        _payRent(listing, _rentals[device][tenant], prepaidRent);
-        // Mint app device to tenant
-        APPLICATION.mint(tenant, device);
+        _payRent(listing, _rentals[device], prepaidRent);
 
-        emit Rent(tenant, device, rentalDays, prepaidRent);
+        emit Rent(device, instanceId, startTime, endTime, rentalDays, prepaidRent);
     }
 
     /**
@@ -251,11 +254,10 @@ contract Marketplace is IMarketplace, Ownable {
      */
     function payRent(
         address device,
-        address tenant,
         uint256 rent_
     ) public payable {
         ListingInfo memory listing = _listings[device];
-        RentalInfo storage rental = _rentals[device][tenant];
+        RentalInfo storage rental = _rentals[device];
         require(
             rental.totalPaidRent + rent_ <=
                 rental.rentalDays * rental.dailyRent,
@@ -265,14 +267,14 @@ contract Marketplace is IMarketplace, Ownable {
         // Pay rent
         _payRent(listing, rental, rent_);
 
-        emit PayRent(tenant, device, rent_);
+        emit PayRent(device, rent_);
     }
 
     /**
      * @inheritdoc IMarketplace
      */
-    function endLease(address device, address tenant) public {
-        RentalInfo storage rental = _rentals[device][tenant];
+    function endLease(address device) public {
+        RentalInfo storage rental = _rentals[device];
         // The lease can be ended only if the term is over or the rent is insufficient
         uint256 rentNeeded = ((block.timestamp - rental.startTime) *
             rental.dailyRent) / 1 days;
@@ -286,7 +288,7 @@ contract Marketplace is IMarketplace, Ownable {
         APPLICATION.burn(device);
         rental.status = RentalStatus.EndedOrNotExist;
 
-        emit EndLease(tenant, device, msg.sender);
+        emit EndLease(device, msg.sender);
     }
 
     /**

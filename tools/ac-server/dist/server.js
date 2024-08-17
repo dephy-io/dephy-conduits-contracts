@@ -14,17 +14,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const ethers_1 = require("ethers");
-const AccessTokenFactory_json_1 = __importDefault(require("./abi/AccessTokenFactory.json"));
-const AccessToken_json_1 = __importDefault(require("./abi/AccessToken.json"));
-const ProductFactory_json_1 = __importDefault(require("./abi/ProductFactory.json"));
-const Product_json_1 = __importDefault(require("./abi/Product.json"));
+const IApplication_json_1 = __importDefault(require("./IApplication.json"));
 const PORT = process.env.PORT || 3155;
-const PRODUCT_FACTORY = "0x1dFC014B1852f0c81d11A3535335f1984cD4CE37";
-const ACCESS_TOKEN_FACTORY = "0x34D22CbdCD41E06af4BDB87BFc67c58E83DcE922";
-const RPC = "https://base-sepolia.g.alchemy.com/v2/0ZS0OdXDqBpKt6wkusuFDyi0lLlTFRVf";
+const APPLICATION = process.env.APPLICATION || "0xed867DdA455093e40342F509f817494BC850a598";
+const RPC = process.env.RPC || "https://base-sepolia.g.alchemy.com/v2/0ZS0OdXDqBpKt6wkusuFDyi0lLlTFRVf";
 const provider = new ethers_1.ethers.providers.JsonRpcProvider(RPC);
-const productFactoryContract = new ethers_1.ethers.Contract(PRODUCT_FACTORY, ProductFactory_json_1.default, provider);
-const accessTokenFactoryContract = new ethers_1.ethers.Contract(ACCESS_TOKEN_FACTORY, AccessTokenFactory_json_1.default, provider);
+const applicationContract = new ethers_1.ethers.Contract(APPLICATION, IApplication_json_1.default.abi, provider);
 const app = (0, express_1.default)();
 app.get("/access-control", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let { device, user } = req.query;
@@ -39,28 +34,7 @@ app.get("/access-control", (req, res) => __awaiter(void 0, void 0, void 0, funct
         return res.status(400).json({ error: "Address parsed error" });
     }
     try {
-        let result;
-        const { product, tokenId } = yield productFactoryContract.getDeviceBinding(device);
-        if (product === ethers_1.ethers.constants.AddressZero) {
-            result = false;
-        }
-        else {
-            const productContract = new ethers_1.ethers.Contract(product, Product_json_1.default, provider);
-            const owner = yield productContract.ownerOf(tokenId);
-            if (owner === user) {
-                result = true;
-            }
-            else {
-                const accessTokenAddress = yield accessTokenFactoryContract.getAccessToken(product);
-                const accessTokenContract = new ethers_1.ethers.Contract(accessTokenAddress, AccessToken_json_1.default, provider);
-                if (accessTokenAddress === ethers_1.ethers.constants.AddressZero) {
-                    result = false;
-                }
-                else {
-                    result = yield accessTokenContract.isUserOwned(user, tokenId);
-                }
-            }
-        }
+        const result = yield applicationContract.isAccessible(device, user);
         res.json({ data: result });
     }
     catch (error) {

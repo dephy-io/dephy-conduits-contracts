@@ -26,6 +26,7 @@ interface IMarketplaceStructs {
     }
 
     struct RentalInfo {
+        uint256 instanceId;
         uint256 startTime;
         uint256 endTime;
         uint256 rentalDays;

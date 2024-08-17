@@ -12,10 +12,7 @@ interface IMarketplaceEvents {
         address rentRecipient
     );
 
-    event Delist(
-        address indexed owner,
-        address indexed device
-    );
+    event Delist(address indexed owner, address indexed device);
 
     event Relist(
         address indexed owner,
@@ -28,26 +25,23 @@ interface IMarketplaceEvents {
     );
 
     event Rent(
-        address indexed tenant,
         address indexed device,
+        uint256 indexed instanceId,
+        uint256 startTime,
+        uint256 endTime,
         uint256 rentalDays,
         uint256 prepaidRent
     );
 
     event PayRent(
-        address indexed tenant,
         address indexed device,
         uint256 rent
     );
 
     event EndLease(
-        address indexed tenant,
         address indexed device,
         address operator
     );
 
-    event Withdraw(
-        address indexed owner,
-        address indexed device
-    );
+    event Withdraw(address indexed owner, address indexed device);
 }

@@ -18,7 +18,7 @@ contract MarketplaceTest is Test {
     address deviceOwner;
 
     Marketplace marketplace;
-    address application;
+    MockApplication application;
 
     address tenant;
 
@@ -41,12 +41,12 @@ contract MarketplaceTest is Test {
         );
 
         MockApplication applicationImpl = new MockApplication();
-        application = Clones.clone(address(applicationImpl));
-        MockApplication(application).initialize(address(productFactory), "Marketplace", "MKP");
+        application = MockApplication(Clones.clone(address(applicationImpl)));
+        application.initialize(address(productFactory), "Marketplace", "MKP");
 
         marketplace = new Marketplace(
             address(this),
-            application,
+            address(application),
             new address[](0),
             payable(treasury),
             feePoints
@@ -90,6 +90,7 @@ contract MarketplaceTest is Test {
         _list();
         IMarketplaceStructs.RentalInfo memory rental = _rent(5, 5 ether);
 
+        assertEq(rental.instanceId, application.getInstanceIdByDevice(device));
         assertEq(rental.startTime, block.timestamp);
         assertEq(rental.endTime, block.timestamp + 5 days);
         assertEq(rental.rentalDays, 5);
@@ -125,10 +126,10 @@ contract MarketplaceTest is Test {
         );
 
         vm.prank(tenant);
-        marketplace.payRent{value: 3 ether}(device, tenant, 3 ether);
+        marketplace.payRent{value: 3 ether}(device, 3 ether);
 
         // Check that the total paid rent is increment
-        rental = marketplace.getRentalInfo(device, tenant);
+        rental = marketplace.getRentalInfo(device);
         assertEq(rental.totalPaidRent, 8 ether);
     }
 
@@ -139,12 +140,11 @@ contract MarketplaceTest is Test {
         // Advance time to end the rental period
         vm.warp(block.timestamp + 6 days);
 
-        vm.prank(tenant);
-        marketplace.endLease(device, tenant);
+        marketplace.endLease(device);
 
         // Check that the lease is ended
         IMarketplaceStructs.RentalInfo memory rental = marketplace
-            .getRentalInfo(device, tenant);
+            .getRentalInfo(device);
         assertEq(
             uint256(rental.status),
             uint256(IMarketplaceStructs.RentalStatus.EndedOrNotExist)
@@ -199,6 +199,6 @@ contract MarketplaceTest is Test {
             prepaidRent
         );
 
-        return marketplace.getRentalInfo(device, tenant);
+        return marketplace.getRentalInfo(device);
     }
 }

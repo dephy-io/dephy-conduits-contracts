@@ -10,8 +10,7 @@ interface IMarketplace is IMarketplaceStructs, IMarketplaceEvents {
     ) external view returns (ListingInfo memory);
 
     function getRentalInfo(
-        address device,
-        address tenant
+        address device
     ) external view returns (RentalInfo memory);
 
     function setFeePoints(uint256 feePoints) external;
@@ -51,11 +50,10 @@ interface IMarketplace is IMarketplaceStructs, IMarketplaceEvents {
 
     function payRent(
         address device,
-        address tenant,
         uint256 rent_
     ) external payable;
 
-    function endLease(address device, address tenant) external;
+    function endLease(address device) external;
 
     function withdraw(address device) external;
 }
