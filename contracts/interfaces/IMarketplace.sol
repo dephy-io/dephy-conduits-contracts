@@ -6,13 +6,11 @@ import {IMarketplaceEvents} from "./IMarketplaceEvents.sol";
 
 interface IMarketplace is IMarketplaceStructs, IMarketplaceEvents {
     function getListingInfo(
-        address accessToken,
-        uint256 tokenId
+        address device
     ) external view returns (ListingInfo memory);
 
     function getRentalInfo(
-        address accessToken,
-        uint256 tokenId,
+        address device,
         address tenant
     ) external view returns (RentalInfo memory);
 
@@ -24,17 +22,40 @@ interface IMarketplace is IMarketplaceStructs, IMarketplaceEvents {
 
     function removeRentCurrencies(address[] memory rentCurrencies) external;
 
-    function list(ListArgs memory args) external;
+    function list(
+        address device,
+        uint256 minRentalDays,
+        uint256 maxRentalDays,
+        address rentCurrency,
+        uint256 dailyRent,
+        address rentRecipient
+    ) external;
 
-    function delist(DelistArgs memory args) external;
+    function delist(address device) external;
 
-    function relist(RelistArgs memory args) external;
+    function relist(
+        address device,
+        uint256 minRentalDays,
+        uint256 maxRentalDays,
+        address rentCurrency,
+        uint256 dailyRent,
+        address rentRecipient
+    ) external;
 
-    function rent(RentArgs memory args) external payable;
+    function rent(
+        address device,
+        address tenant,
+        uint256 rentalDays,
+        uint256 prepaidRent
+    ) external payable;
 
-    function payRent(PayRentArgs memory args) external payable;
+    function payRent(
+        address device,
+        address tenant,
+        uint256 rent_
+    ) external payable;
 
-    function endLease(EndLeaseArgs memory args) external;
+    function endLease(address device, address tenant) external;
 
-    function withdraw(WithdrawArgs memory args) external;
+    function withdraw(address device) external;
 }

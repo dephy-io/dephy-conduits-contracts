@@ -6,14 +6,18 @@ import "forge-std/src/Script.sol";
 
 contract DeployMarketplace is Script {
     uint256 deployerPrivateKey;
-    address accessTokenFactory;
+
+    address initialOwner;
+    address application;
     address[] rentCurrencies;
     address treasury;
     uint256 feePoints; 
 
     function setUp() public {
         deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        accessTokenFactory = 0x34D22CbdCD41E06af4BDB87BFc67c58E83DcE922;
+
+        initialOwner = vm.addr(deployerPrivateKey);
+        application = 0x1B7C23B82022365a3423A32683a974eE63efbd0C;
         treasury = 0x3F3786B67DC1874C3Bd8e8CD61F5eea87604470F;
         feePoints = 100; // 100/10000 = 10%
     }
@@ -21,8 +25,8 @@ contract DeployMarketplace is Script {
     function run() public returns (address) {
         vm.startBroadcast(deployerPrivateKey);
         Marketplace martketplace = new Marketplace(
-            vm.addr(deployerPrivateKey),
-            accessTokenFactory,
+            initialOwner,
+            application,
             rentCurrencies,
             payable(treasury),
             feePoints
