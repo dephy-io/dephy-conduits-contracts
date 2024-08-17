@@ -13,13 +13,27 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
+const axios_1 = __importDefault(require("axios"));
 const ethers_1 = require("ethers");
 const IApplication_json_1 = __importDefault(require("./IApplication.json"));
+const NOTIFY_API = process.env.NOTIFY_API || "https://localhost:1234/notify";
 const PORT = process.env.PORT || 3155;
 const APPLICATION = process.env.APPLICATION || "0xed867DdA455093e40342F509f817494BC850a598";
 const RPC = process.env.RPC || "https://base-sepolia.g.alchemy.com/v2/0ZS0OdXDqBpKt6wkusuFDyi0lLlTFRVf";
 const provider = new ethers_1.ethers.providers.JsonRpcProvider(RPC);
 const applicationContract = new ethers_1.ethers.Contract(APPLICATION, IApplication_json_1.default.abi, provider);
+applicationContract.on("Transfer", (from, to, tokenId, event) => __awaiter(void 0, void 0, void 0, function* () {
+    if (from !== ethers_1.ethers.constants.AddressZero) {
+        console.log(`Transfer from ${from} to ${to}, tokenId: ${tokenId.toString()}`);
+        const response = yield axios_1.default.post(NOTIFY_API, { from });
+        console.log(`Notification[transfer] sent, response status: ${response.status}`);
+    }
+    if (to === ethers_1.ethers.constants.AddressZero) {
+        console.log(`Token ${tokenId.toString()} burned from ${from}`);
+        const response = yield axios_1.default.post(NOTIFY_API, { from });
+        console.log(`Notification[burn] sent, response status: ${response.status}`);
+    }
+}));
 const app = (0, express_1.default)();
 app.get("/access-control", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let { device, user } = req.query;
