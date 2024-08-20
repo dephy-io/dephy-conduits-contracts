@@ -17,7 +17,7 @@ func SetupRouter(mode string) *gin.Engine {
 
 	v1.GET("/devices/market", controller.GetMarketDevicesHandler)
 	v1.GET("/devices/listing", controller.GetListingDevicesHandler)
-	v1.GET("/devices/rental", controller.GetRentingDevicesHandler)
+	v1.GET("/devices/renting", controller.GetRentingDevicesHandler)
 
 	return r
 }
