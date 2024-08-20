@@ -26,6 +26,7 @@ interface IMarketplaceStructs {
     }
 
     struct RentalInfo {
+        uint256 instanceId;
         uint256 startTime;
         uint256 endTime;
         uint256 rentalDays;
@@ -33,56 +34,5 @@ interface IMarketplaceStructs {
         uint256 dailyRent;
         uint256 totalPaidRent;
         RentalStatus status;
-    }
-
-    struct ListArgs {
-        address product;
-        uint256 tokenId;
-        uint256 minRentalDays;
-        uint256 maxRentalDays;
-        address rentCurrency;
-        uint256 dailyRent;
-        address rentRecipient;
-    }
-
-    struct DelistArgs {
-        address payable accessToken;
-        uint256 tokenId;
-    }
-
-    struct RelistArgs {
-        address accessToken;
-        uint256 tokenId;
-        uint256 minRentalDays;
-        uint256 maxRentalDays;
-        address rentCurrency;
-        uint256 dailyRent;
-        address payable rentRecipient;
-    }
-
-    struct RentArgs {
-        address accessToken;
-        uint256 tokenId;
-        address tenant;
-        uint256 rentalDays;
-        uint256 prepaidRent;
-    }
-
-    struct PayRentArgs {
-        address accessToken;
-        uint256 tokenId;
-        address tenant;
-        uint256 rent;
-    }
-
-    struct EndLeaseArgs {
-        address accessToken;
-        uint256 tokenId;
-        address tenant;
-    }
-
-    struct WithdrawArgs {
-        address accessToken;
-        uint256 tokenId;
     }
 }

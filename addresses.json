@@ -1,10 +1,7 @@
 {
     "BaseSepolia": {
-        "AccessTokenFactory": "0x34D22CbdCD41E06af4BDB87BFc67c58E83DcE922",
-        "Marketplace": "0xb6b95a93eace5cF8b2879D5EE28D5625DD963Ae0"
-    },
-    "BNBTestnet": {
-        "AccessTokenFactory": "0x35a8483444947B2166Aa85837F97FaEf122f5ebb",
-        "Marketplace": "0x647d77324E241709BaF63D7f96F0C19ecA06E2e0"
+        "Application": "0xed867DdA455093e40342F509f817494BC850a598",
+        "Marketplace": "0x5606119e87B61228485b761b09AA7A48f7f48980",
+        "AccessIdentities": "0x4Cd640e4177a5d86B06BDB147E7efECFf3E478b3"
     }
 }

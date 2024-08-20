@@ -3,20 +3,19 @@ pragma solidity ^0.8.24;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {AccessTokenFactory} from "./AccessTokenFactory.sol";
-import {AccessToken} from "./AccessToken.sol";
-import {IProduct} from "./interfaces/IProduct.sol";
+import {IApplication} from "./interfaces/IApplication.sol";
 import {IMarketplace} from "./interfaces/IMarketplace.sol";
 
 contract Marketplace is IMarketplace, Ownable {
     using SafeERC20 for IERC20;
 
+    IApplication public immutable APPLICATION;
+
     address public constant NATIVE_TOKEN = address(0);
 
     uint256 public constant MAX_POINTS = 10000;
-
-    AccessTokenFactory public immutable ACCESS_TOKEN_FACTORY;
 
     address payable internal _treasury;
 
@@ -28,25 +27,24 @@ contract Marketplace is IMarketplace, Ownable {
     mapping(address => bool) public supportedRentCurrencies;
 
     /**
-     * @notice access token => token id => listing info
+     * @notice device => listing info
      */
-    mapping(address => mapping(uint256 => ListingInfo)) internal _listings;
+    mapping(address => ListingInfo) internal _listings;
 
     /**
-     * @notice access token => token id => tenant => rent info
+     * @notice device => rent info
      */
-    mapping(address => mapping(uint256 => mapping(address => RentalInfo)))
-        internal _rentals;
+    mapping(address => RentalInfo) internal _rentals;
 
     constructor(
         address initialOwner,
-        address accessTokenFactory,
+        address application,
         address[] memory rentCurrencies,
         address payable treasury,
         uint256 feePoints
     ) Ownable(initialOwner) {
-        ACCESS_TOKEN_FACTORY = AccessTokenFactory(accessTokenFactory);
-        for (uint i = 0; i < rentCurrencies.length; i++) {
+        APPLICATION = IApplication(application);
+        for (uint256 i = 0; i < rentCurrencies.length; i++) {
             supportedRentCurrencies[rentCurrencies[i]] = true;
         }
         _treasury = treasury;
@@ -57,21 +55,18 @@ contract Marketplace is IMarketplace, Ownable {
      * @inheritdoc IMarketplace
      */
     function getListingInfo(
-        address accessToken,
-        uint256 tokenId
+        address device
     ) external view returns (ListingInfo memory) {
-        return _listings[accessToken][tokenId];
+        return _listings[device];
     }
 
     /**
      * @inheritdoc IMarketplace
      */
     function getRentalInfo(
-        address accessToken,
-        uint256 tokenId,
-        address tenant
+        address device
     ) external view returns (RentalInfo memory) {
-        return _rentals[accessToken][tokenId][tenant];
+        return _rentals[device];
     }
 
     /**
@@ -113,129 +108,135 @@ contract Marketplace is IMarketplace, Ownable {
     /**
      * @inheritdoc IMarketplace
      */
-    function list(ListArgs memory args) public {
-        address accessToken = ACCESS_TOKEN_FACTORY.getAccessToken(args.product);
-        if (accessToken == address(0)) {
-            accessToken = ACCESS_TOKEN_FACTORY.createAccessToken(args.product);
-        }
+    function list(
+        address device,
+        uint256 minRentalDays,
+        uint256 maxRentalDays,
+        address rentCurrency,
+        uint256 dailyRent,
+        address rentRecipient
+    ) public {
         require(
-            _listings[accessToken][args.tokenId].status ==
-                ListingStatus.WithdrawnOrNotExist, // Never listed or withdrawn
+            _listings[device].status == ListingStatus.WithdrawnOrNotExist, // Never listed or withdrawn
             "token already listed"
         );
-        require(args.minRentalDays > 0, "invalid minimum rental days");
+        require(minRentalDays > 0, "invalid minimum rental days");
+        require(maxRentalDays >= minRentalDays, "invalid maximum rental days");
         require(
-            args.maxRentalDays >= args.minRentalDays,
-            "invalid maximum rental days"
-        );
-        require(
-            args.rentCurrency == NATIVE_TOKEN ||
-                supportedRentCurrencies[args.rentCurrency],
+            rentCurrency == NATIVE_TOKEN ||
+                supportedRentCurrencies[rentCurrency],
             "unsupported rent currency"
         );
 
-        _listings[accessToken][args.tokenId] = ListingInfo({
+        _listings[device] = ListingInfo({
             owner: msg.sender,
-            minRentalDays: args.minRentalDays,
-            maxRentalDays: args.maxRentalDays,
-            rentCurrency: args.rentCurrency,
-            dailyRent: args.dailyRent,
-            rentRecipient: payable(args.rentRecipient),
+            minRentalDays: minRentalDays,
+            maxRentalDays: maxRentalDays,
+            rentCurrency: rentCurrency,
+            dailyRent: dailyRent,
+            rentRecipient: payable(rentRecipient),
             status: ListingStatus.Listing
         });
 
-        IProduct(args.product).transferFrom(
-            msg.sender,
-            address(this),
-            args.tokenId
-        );
+        _transferDevice(device, msg.sender, address(this));
 
         emit List(
             msg.sender,
-            args.product,
-            accessToken,
-            args.tokenId,
-            args.minRentalDays,
-            args.maxRentalDays,
-            args.rentCurrency,
-            args.dailyRent,
-            args.rentRecipient
+            device,
+            minRentalDays,
+            maxRentalDays,
+            rentCurrency,
+            dailyRent,
+            rentRecipient
         );
     }
 
     /**
      * @inheritdoc IMarketplace
      */
-    function delist(DelistArgs memory args) public {
-        ListingInfo storage listing = _listings[args.accessToken][args.tokenId];
+    function delist(address device) public {
+        ListingInfo storage listing = _listings[device];
         require(listing.owner == msg.sender, "not listing owner");
         listing.status = ListingStatus.Delisted;
 
-        emit Delist(msg.sender, args.accessToken, args.tokenId);
+        emit Delist(msg.sender, device);
     }
 
     /**
      * @inheritdoc IMarketplace
      */
-    function relist(RelistArgs memory args) public {
-        ListingInfo storage listing = _listings[args.accessToken][args.tokenId];
+    function relist(
+        address device,
+        uint256 minRentalDays,
+        uint256 maxRentalDays,
+        address rentCurrency,
+        uint256 dailyRent,
+        address rentRecipient
+    ) public {
+        ListingInfo storage listing = _listings[device];
         require(listing.owner == msg.sender, "not listing owner");
-        require(args.minRentalDays > 0, "invalid minimum rental days");
+        require(minRentalDays > 0, "invalid minimum rental days");
+        require(maxRentalDays >= minRentalDays, "invalid maximum rental days");
         require(
-            args.maxRentalDays >= args.minRentalDays,
-            "invalid maximum rental days"
-        );
-        require(
-            args.rentCurrency == NATIVE_TOKEN ||
-                supportedRentCurrencies[args.rentCurrency],
+            rentCurrency == NATIVE_TOKEN ||
+                supportedRentCurrencies[rentCurrency],
             "unsupported rent currency"
         );
 
-        listing.minRentalDays = args.minRentalDays;
-        listing.maxRentalDays = args.maxRentalDays;
-        listing.rentCurrency = args.rentCurrency;
-        listing.dailyRent = args.dailyRent;
-        listing.rentRecipient = args.rentRecipient;
+        listing.minRentalDays = minRentalDays;
+        listing.maxRentalDays = maxRentalDays;
+        listing.rentCurrency = rentCurrency;
+        listing.dailyRent = dailyRent;
+        listing.rentRecipient = payable(rentRecipient);
         listing.status = ListingStatus.Listing;
 
         emit Relist(
             msg.sender,
-            args.accessToken,
-            args.tokenId,
-            args.minRentalDays,
-            args.maxRentalDays,
-            args.rentCurrency,
-            args.dailyRent,
-            args.rentRecipient
+            device,
+            minRentalDays,
+            maxRentalDays,
+            rentCurrency,
+            dailyRent,
+            rentRecipient
         );
     }
 
     /**
      * @inheritdoc IMarketplace
      */
-    function rent(RentArgs memory args) public payable {
+    function rent(
+        address device,
+        address tenant,
+        uint256 rentalDays,
+        uint256 prepaidRent
+    ) public payable {
         require(
-            _rentals[args.accessToken][args.tokenId][args.tenant].status ==
-                RentalStatus.EndedOrNotExist,
+            _rentals[device].status == RentalStatus.EndedOrNotExist,
             "existing rental"
         );
 
-        ListingInfo memory listing = _listings[args.accessToken][args.tokenId];
+        ListingInfo memory listing = _listings[device];
         require(listing.status == ListingStatus.Listing, "not listing");
         require(
-            listing.minRentalDays <= args.rentalDays &&
-                args.rentalDays <= listing.maxRentalDays,
+            listing.minRentalDays <= rentalDays &&
+                rentalDays <= listing.maxRentalDays,
             "invalid rental days"
         );
         require(
-            args.prepaidRent >= listing.minRentalDays * listing.dailyRent,
+            prepaidRent >= listing.minRentalDays * listing.dailyRent,
             "insufficient prepaid rent"
         );
 
-        _rentals[args.accessToken][args.tokenId][args.tenant] = RentalInfo({
-            startTime: block.timestamp,
-            endTime: block.timestamp + args.rentalDays * 1 days,
-            rentalDays: args.rentalDays,
+        // Mint app device to tenant
+        uint256 instanceId = APPLICATION.mint(tenant, device);
+
+        uint256 startTime = block.timestamp;
+        uint256 endTime = block.timestamp + rentalDays * 1 days;
+        _rentals[device] = RentalInfo({
+            instanceId: instanceId,
+            startTime: startTime,
+            endTime: endTime,
+            rentalDays: rentalDays,
             rentCurrency: listing.rentCurrency,
             dailyRent: listing.dailyRent,
             totalPaidRent: 0,
@@ -243,55 +244,37 @@ contract Marketplace is IMarketplace, Ownable {
         });
 
         // Pay rent
-        _payRent(
-            listing,
-            _rentals[args.accessToken][args.tokenId][args.tenant],
-            args.prepaidRent
-        );
-        // Mint access token to tenant
-        AccessToken(args.accessToken).mint(args.tenant, args.tokenId);
+        _payRent(listing, _rentals[device], prepaidRent);
 
-        emit Rent(
-            args.tenant,
-            args.accessToken,
-            args.tokenId,
-            args.rentalDays,
-            args.prepaidRent
-        );
+        emit Rent(device, instanceId, startTime, endTime, rentalDays, prepaidRent);
     }
 
     /**
      * @inheritdoc IMarketplace
      */
-    function payRent(PayRentArgs memory args) public payable {
-        ListingInfo memory listing = _listings[args.accessToken][args.tokenId];
-        RentalInfo storage rental = _rentals[args.accessToken][args.tokenId][
-            args.tenant
-        ];
+    function payRent(
+        address device,
+        uint256 rent_
+    ) public payable {
+        ListingInfo memory listing = _listings[device];
+        RentalInfo storage rental = _rentals[device];
         require(
-            rental.totalPaidRent + args.rent <=
+            rental.totalPaidRent + rent_ <=
                 rental.rentalDays * rental.dailyRent,
             "too much rent"
         );
 
         // Pay rent
-        _payRent(listing, rental, args.rent);
+        _payRent(listing, rental, rent_);
 
-        emit PayRent(
-            args.tenant,
-            args.accessToken,
-            args.tokenId,
-            args.rent
-        );
+        emit PayRent(device, rent_);
     }
 
     /**
      * @inheritdoc IMarketplace
      */
-    function endLease(EndLeaseArgs memory args) public {
-        RentalInfo storage rental = _rentals[args.accessToken][args.tokenId][
-            args.tenant
-        ];
+    function endLease(address device) public {
+        RentalInfo storage rental = _rentals[device];
         // The lease can be ended only if the term is over or the rent is insufficient
         uint256 rentNeeded = ((block.timestamp - rental.startTime) *
             rental.dailyRent) / 1 days;
@@ -301,41 +284,28 @@ contract Marketplace is IMarketplace, Ownable {
             "cannot end lease"
         );
 
-        // Burn tenant's access token
-        AccessToken(args.accessToken).burn(args.tokenId);
+        // Burn tenant's app device
+        APPLICATION.burn(device);
         rental.status = RentalStatus.EndedOrNotExist;
 
-        emit EndLease(
-            args.tenant,
-            args.accessToken,
-            args.tokenId,
-            msg.sender
-        );
+        emit EndLease(device, msg.sender);
     }
 
     /**
      * @inheritdoc IMarketplace
      */
-    function withdraw(WithdrawArgs memory args) public {
-        ListingInfo storage listing = _listings[args.accessToken][args.tokenId];
+    function withdraw(address device) public {
+        ListingInfo storage listing = _listings[device];
         require(listing.owner == msg.sender, "not listing owner");
         require(
-            !AccessToken(args.accessToken).isExist(args.tokenId),
-            "access token has tenant"
+            APPLICATION.getInstanceIdByDevice(device) == 0,
+            "device has tenant"
         );
         listing.status = ListingStatus.WithdrawnOrNotExist;
 
-        (AccessToken(args.accessToken).PRODUCT()).transferFrom(
-            address(this),
-            listing.owner,
-            args.tokenId
-        );
+        _transferDevice(device, address(this), listing.owner);
 
-        emit Withdraw(
-            msg.sender,
-            args.accessToken,
-            args.tokenId
-        );
+        emit Withdraw(msg.sender, device);
     }
 
     function _payRent(
@@ -376,5 +346,16 @@ contract Marketplace is IMarketplace, Ownable {
         }
 
         rental.totalPaidRent += rent_;
+    }
+
+    function _transferDevice(
+        address device,
+        address from,
+        address to
+    ) internal {
+        (address product, uint256 tokenId) = APPLICATION.getDeviceBinding(
+            device
+        );
+        IERC721(product).transferFrom(from, to, tokenId);
     }
 }
