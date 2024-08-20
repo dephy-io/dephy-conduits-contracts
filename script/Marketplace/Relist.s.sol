@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {Marketplace} from "../contracts/Marketplace.sol";
-import {IMarketplaceStructs} from "../contracts/interfaces/IMarketplaceStructs.sol";
+import {Marketplace} from "../../contracts/Marketplace.sol";
+import {IMarketplaceStructs} from "../../contracts/interfaces/IMarketplaceStructs.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "forge-std/src/Script.sol";
 
-contract List is Script {
+contract Relist is Script {
     uint256 ownerPrivateKey;
 
     Marketplace marketplace;
 
-    // list params
+    // relist params
     address device;
     uint256 minRentalDays;
     uint256 maxRentalDays;
@@ -28,18 +28,13 @@ contract List is Script {
         minRentalDays = 2; // set min rental days
         maxRentalDays = 2; // set max rental days
         rentCurrency = address(0); // only whitelisted currency, zero-address means bnb(native token)
-        dailyRent = 2*1e14; // set daily rent, here is 0.0001 BNB per day
+        dailyRent = 2*1e10; // set daily rent, here is 0.0001 BNB per day
         rentRecipient = vm.addr(ownerPrivateKey); // set rent receiver
     }
 
     function run() public {
         vm.startBroadcast(ownerPrivateKey);
-        (address product, uint256 tokenId) = marketplace.APPLICATION().getDeviceBinding(device);
-        IERC721(product).approve(
-            address(marketplace),
-            tokenId
-        );
-        marketplace.list(device, minRentalDays, maxRentalDays, rentCurrency, dailyRent, rentRecipient);
+        marketplace.relist(device, minRentalDays, maxRentalDays, rentCurrency, dailyRent, rentRecipient);
         vm.stopBroadcast();
     }
 }

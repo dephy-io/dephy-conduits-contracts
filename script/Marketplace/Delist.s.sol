@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {Marketplace} from "../contracts/Marketplace.sol";
-import {IMarketplaceStructs} from "../contracts/interfaces/IMarketplaceStructs.sol";
+import {Marketplace} from "../../contracts/Marketplace.sol";
+import {IMarketplaceStructs} from "../../contracts/interfaces/IMarketplaceStructs.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "forge-std/src/Script.sol";
 
-contract Withdraw is Script {
+contract Delist is Script {
     uint256 ownerPrivateKey;
 
     Marketplace marketplace;
 
-    // withdraw params
+    // delist params
     address device;
 
     function setUp() public {
@@ -24,7 +24,7 @@ contract Withdraw is Script {
 
     function run() public {
         vm.startBroadcast(ownerPrivateKey);
-        marketplace.withdraw(device);
+        marketplace.delist(device);
         vm.stopBroadcast();
     }
 }

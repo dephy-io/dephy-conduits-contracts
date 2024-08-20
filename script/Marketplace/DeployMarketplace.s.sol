@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {Marketplace} from "../contracts/Marketplace.sol";
+import {Marketplace} from "../../contracts/Marketplace.sol";
 import "forge-std/src/Script.sol";
 
 contract DeployMarketplace is Script {
@@ -22,9 +22,9 @@ contract DeployMarketplace is Script {
         feePoints = 100; // 100/10000 = 10%
     }
 
-    function run() public returns (address) {
+    function run() public {
         vm.startBroadcast(deployerPrivateKey);
-        Marketplace martketplace = new Marketplace(
+        new Marketplace(
             initialOwner,
             application,
             rentCurrencies,
@@ -32,6 +32,5 @@ contract DeployMarketplace is Script {
             feePoints
         );
         vm.stopBroadcast();
-        return address(martketplace);
     }
 }

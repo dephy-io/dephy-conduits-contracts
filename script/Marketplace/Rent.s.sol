@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {Marketplace} from "../contracts/Marketplace.sol";
-import {IMarketplaceStructs} from "../contracts/interfaces/IMarketplaceStructs.sol";
+import {Marketplace} from "../../contracts/Marketplace.sol";
+import {IMarketplaceStructs} from "../../contracts/interfaces/IMarketplaceStructs.sol";
 import "forge-std/src/Script.sol";
 
 contract Rent is Script {
