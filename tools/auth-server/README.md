@@ -1,59 +1,69 @@
-# Tool Access Control
+# Tool Auth Server
 
-## Cli
-
-Prepare environmental variables:
+## Run
 
 ```bash
-source .env
+pnpm run server
 ```
 
-### Help
+## Test Procedure
+
+1. Create activated device:
+
+- repo
+  `dephy-id-evm/examples/public-vendor`
+- cmd
 
 ```bash
-pnpm run cli --help
-```
-
-### Create AccessToken
-
-```bash
-pnpm run cli createAccessToken \
---rpc $BNB_TESTNET_RPC_URL \
+pnpm run cli create-activated-device \
+--rpc $BASE_SEPOLIA_RPC_URL \
 --privatekey $PRIVATE_KEY \
---accessTokenFactory {accessTokenFactory address}
---product {product address}
+--device {device address} \
+--receiver {receiver address}
 ```
 
-### Mint
+2. Owner list device to Marketplace
+
+- repo
+  `dephy-condiuts`
+- prepare
+  set `ownerPrivateKey` and `list params` in `script/Marketplace/List.s.sol`
+- cmd
 
 ```bash
-pnpm run cli mint \
---rpc $BNB_TESTNET_RPC_URL \
---privatekey $PRIVATE_KEY \
---accessTokenFactory {accessTokenFactory address}
---product {product address}
---tokenId {product token id}
---user {user address}
+forge script script/Marketplace/List.s.sol --rpc-url base_sepolia --broadcast
 ```
 
-### Burn
+3. Tenant rent device from Marketplace
+
+- repo
+  `dephy-condiuts`
+- prepare
+  set `tenantPrivateKet` and `rent params` in `script/Marketplace/Rent.s.sol`
+- cmd
 
 ```bash
-pnpm run cli burn \
---rpc $BNB_TESTNET_RPC_URL \
---privatekey $PRIVATE_KEY \
---accessTokenFactory {accessTokenFactory address}
---product {product address}
---tokenId {product token id}
+forge script script/Marketplace/Rent.s.sol --rpc-url base_sepolia --broadcast
 ```
 
-### Access Control
+4. Add Identity for tenant
+
+- repo
+  `dephy-condiuts`
+- prepare
+  set `operatorPrivateKey`, `prefix` and `digest` in `script/Marketplace/Rent.s.sol`
+- cmd
 
 ```bash
-pnpm run cli accessControl \
---rpc $BNB_TESTNET_RPC_URL \
---accessTokenFactory {accessTokenFactory address}
---product {product address}
---tokenId {product token id}
---user {user address}
+forge script script/Marketplace/Rent.s.sol --rpc-url base_sepolia --broadcast
+```
+
+5. Run auth server
+
+- repo
+  `dephy-condiuts/tools/auth-server`
+- cmd
+
+```bash
+DEVICE={device address} pnpm run server
 ```
