@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.24;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
@@ -228,12 +228,12 @@ contract Marketplace is IMarketplace, Ownable {
         );
 
         // Mint app device to tenant
-        uint256 instanceId = APPLICATION.mint(tenant, device);
+        uint256 autherizationId = APPLICATION.mint(tenant, device);
 
         uint256 startTime = block.timestamp;
         uint256 endTime = block.timestamp + rentalDays * 1 days;
         _rentals[device] = RentalInfo({
-            instanceId: instanceId,
+            autherizationId: autherizationId,
             startTime: startTime,
             endTime: endTime,
             rentalDays: rentalDays,
@@ -246,7 +246,7 @@ contract Marketplace is IMarketplace, Ownable {
         // Pay rent
         _payRent(listing, _rentals[device], prepaidRent);
 
-        emit Rent(device, instanceId, startTime, endTime, rentalDays, prepaidRent);
+        emit Rent(device, autherizationId, tenant, startTime, endTime, rentalDays, prepaidRent);
     }
 
     /**
@@ -285,7 +285,7 @@ contract Marketplace is IMarketplace, Ownable {
         );
 
         // Burn tenant's app device
-        APPLICATION.burn(device);
+        APPLICATION.burn(device, rental.autherizationId);
         rental.status = RentalStatus.EndedOrNotExist;
 
         emit EndLease(device, msg.sender);
@@ -296,9 +296,10 @@ contract Marketplace is IMarketplace, Ownable {
      */
     function withdraw(address device) public {
         ListingInfo storage listing = _listings[device];
+        RentalInfo storage rental = _rentals[device];
         require(listing.owner == msg.sender, "not listing owner");
         require(
-            APPLICATION.getInstanceIdByDevice(device) == 0,
+            rental.status == RentalStatus.EndedOrNotExist,
             "device has tenant"
         );
         listing.status = ListingStatus.WithdrawnOrNotExist;

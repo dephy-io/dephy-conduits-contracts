@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.24;
 
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
@@ -80,17 +80,13 @@ contract MarketplaceTest is Test {
             uint256(listing.status),
             uint256(IMarketplaceStructs.ListingStatus.Delisted)
         );
-
-        // vm.prank(tenant);
-        // vm.expectRevert("not listing");
-        // marketplace.rent{value: 5 ether}(rentArgs);
     }
 
     function testRent() public {
         _list();
         IMarketplaceStructs.RentalInfo memory rental = _rent(5, 5 ether);
 
-        assertEq(rental.instanceId, application.getInstanceIdByDevice(device));
+        assertEq(rental.autherizationId, 1);
         assertEq(rental.startTime, block.timestamp);
         assertEq(rental.endTime, block.timestamp + 5 days);
         assertEq(rental.rentalDays, 5);

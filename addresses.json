@@ -1,7 +1,7 @@
 {
     "BaseSepolia": {
-        "Application": "0xed867DdA455093e40342F509f817494BC850a598",
-        "Marketplace": "0x5606119e87B61228485b761b09AA7A48f7f48980",
+        "Application": "0x704876F802d41c52753Ef708B336d5e572db77A3",
+        "Marketplace": "0xd7B74EA2242e7e1918fc862997C30C7ef3Bd65C6",
         "AccessIdentities": "0x4Cd640e4177a5d86B06BDB147E7efECFf3E478b3"
     }
 }
