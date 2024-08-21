@@ -36,28 +36,15 @@
     "type": "function",
     "name": "burn",
     "inputs": [
-      { "name": "instanceId", "type": "uint256", "internalType": "uint256" }
+      { "name": "device", "type": "address", "internalType": "address" },
+      {
+        "name": "authorizationId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "burn",
-    "inputs": [
-      { "name": "device", "type": "address", "internalType": "address" }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "getAppDeviceOwner",
-    "inputs": [
-      { "name": "device", "type": "address", "internalType": "address" }
-    ],
-    "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
-    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -66,6 +53,17 @@
       { "name": "tokenId", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getAuthorizationsByDevice",
+    "inputs": [
+      { "name": "device", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [
+      { "name": "", "type": "uint256[]", "internalType": "uint256[]" }
+    ],
     "stateMutability": "view"
   },
   {
@@ -82,16 +80,15 @@
   },
   {
     "type": "function",
-    "name": "getDeviceByInstanceId",
-    "inputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "name": "getDeviceByAuthorizationId",
+    "inputs": [
+      {
+        "name": "authorizationId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
     "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getInstanceIdByDevice",
-    "inputs": [{ "name": "", "type": "address", "internalType": "address" }],
-    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
     "stateMutability": "view"
   },
   {
@@ -206,11 +203,37 @@
   },
   {
     "type": "function",
+    "name": "tokenByIndex",
+    "inputs": [
+      { "name": "index", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "tokenOfOwnerByIndex",
+    "inputs": [
+      { "name": "owner", "type": "address", "internalType": "address" },
+      { "name": "index", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "tokenURI",
     "inputs": [
       { "name": "tokenId", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [{ "name": "", "type": "string", "internalType": "string" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "totalSupply",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
     "stateMutability": "view"
   },
   {
@@ -312,6 +335,12 @@
     ],
     "anonymous": false
   },
+  { "type": "error", "name": "AlreadyAuthorized", "inputs": [] },
+  {
+    "type": "error",
+    "name": "ERC721EnumerableForbiddenBatchMint",
+    "inputs": []
+  },
   {
     "type": "error",
     "name": "ERC721IncorrectOwner",
@@ -369,6 +398,14 @@
     "name": "ERC721NonexistentToken",
     "inputs": [
       { "name": "tokenId", "type": "uint256", "internalType": "uint256" }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ERC721OutOfBoundsIndex",
+    "inputs": [
+      { "name": "owner", "type": "address", "internalType": "address" },
+      { "name": "index", "type": "uint256", "internalType": "uint256" }
     ]
   },
   { "type": "error", "name": "InvalidInitialization", "inputs": [] },

@@ -2,7 +2,6 @@ package listener
 
 import (
 	"context"
-	"database/sql"
 	"dephy-conduits/config"
 	"dephy-conduits/constants"
 	"dephy-conduits/logic"
@@ -15,6 +14,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/jinzhu/gorm"
 )
 
 var (
@@ -110,7 +110,7 @@ func QueryApplicationEvents(chainId uint64) {
 	var _endAt *big.Int = big.NewInt(0)
 	previousAt, err := logic.GetBookmark(chainId, contractConfig.Address)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if gorm.IsRecordNotFoundError(err) {
 			err = logic.InsertBookmark(chainId, contractConfig.Address, uint64(contractConfig.StartAt))
 			if err != nil {
 				log.Fatalf("[%d]: InsertBookmark for %s failed, %v", chainId, contractConfig.Address, err)

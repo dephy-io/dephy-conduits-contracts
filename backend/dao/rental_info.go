@@ -29,9 +29,9 @@ func GetCurrentRentalInfoByDevice(chainId uint64, device string) (*model.RentalI
 	return &rentalInfo, nil
 }
 
-func GetCurrentRentalInfoByInstanceId(chainId uint64, instanceId string) (*model.RentalInfo, error) {
+func GetCurrentRentalInfoByAutherizationId(chainId uint64, autherizationId string) (*model.RentalInfo, error) {
 	var rentalInfo model.RentalInfo
-	err := db.Where("chain_id = ? AND instance_id = ?", chainId, instanceId).
+	err := db.Where("chain_id = ? AND autherization_id = ?", chainId, autherizationId).
 		Order("block_number DESC").
 		First(&rentalInfo).Error
 	if err != nil {
