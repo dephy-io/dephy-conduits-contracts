@@ -20,7 +20,7 @@ contract Rent is Script {
         tenantPrivateKey = 0x0c6cd1d3bd57be803801f5250eeb8374a30ac11537746995ca3da2a90676da24;
         marketplace = Marketplace(0xd7B74EA2242e7e1918fc862997C30C7ef3Bd65C6);
 
-        device = 0x15A02419160FfdAF3a5d77Ea7e3812ebcC4ED8d5; // set your device here
+        device = 0x56EA88e7e637518EaA9f65028Ba308006afe3C0f; // set your device here
         tenant = vm.addr(tenantPrivateKey); // set tenant address, default is caller
         rentalDays = 1;                       // set rental days, min value is min rental days set by device owner
         prepaidRent = 1 * marketplace.getListingInfo(device).dailyRent; // set prepaid rent, min value is rentalDays * dailyRent set by device owner

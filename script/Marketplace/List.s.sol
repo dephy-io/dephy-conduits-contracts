@@ -24,8 +24,8 @@ contract List is Script {
 
         marketplace = Marketplace(0xd7B74EA2242e7e1918fc862997C30C7ef3Bd65C6);
 
-        device = 0x407156bB8154C5BFA8808125cA981dc257eCed54; // set your device here
-        minRentalDays = 2; // set min rental days
+        device = 0x56EA88e7e637518EaA9f65028Ba308006afe3C0f; // set your device here
+        minRentalDays = 1; // set min rental days
         maxRentalDays = 2; // set max rental days
         rentCurrency = address(0); // only whitelisted currency, zero-address means bnb(native token)
         dailyRent = 2*1e14; // set daily rent, here is 0.0001 BNB per day

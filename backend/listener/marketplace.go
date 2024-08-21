@@ -6,6 +6,7 @@ import (
 	"dephy-conduits/constants"
 	"dephy-conduits/logic"
 	"dephy-conduits/utils"
+	"errors"
 	"log"
 	"math/big"
 	"time"
@@ -14,14 +15,14 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 var (
 	topicList     = crypto.Keccak256Hash([]byte("List(address,address,uint256,uint256,address,uint256,address)"))
 	topicDelist   = crypto.Keccak256Hash([]byte("Delist(address,address)"))
 	topicRelist   = crypto.Keccak256Hash([]byte("Relist(address,address,uint256,uint256,address,uint256,address)"))
-	topicRent     = crypto.Keccak256Hash([]byte("Rent(address,uint256,uint256,uint256,uint256,uint256)"))
+	topicRent     = crypto.Keccak256Hash([]byte("Rent(address,uint256,address,uint256,uint256,uint256,uint256)"))
 	topicPayRent  = crypto.Keccak256Hash([]byte("PayRent(address,uint256)"))
 	topicEndLease = crypto.Keccak256Hash([]byte("EndLease(address,address)"))
 	topicWithdraw = crypto.Keccak256Hash([]byte("Withdraw(address,address)"))
@@ -158,7 +159,7 @@ func QueryMarketplaceEvents(chainId uint64) {
 	var _endAt *big.Int = big.NewInt(0)
 	previousAt, err := logic.GetBookmark(chainId, contractConfig.Address)
 	if err != nil {
-		if gorm.IsRecordNotFoundError(err) {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			err = logic.InsertBookmark(chainId, contractConfig.Address, uint64(contractConfig.StartAt))
 			if err != nil {
 				log.Fatalf("[%d]: InsertBookmark for %s failed, %v", chainId, contractConfig.Address, err)

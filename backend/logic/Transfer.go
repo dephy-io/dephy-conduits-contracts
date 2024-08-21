@@ -2,11 +2,12 @@ package logic
 
 import (
 	"dephy-conduits/dao"
+	"errors"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 func ParseTransfer(chainId uint64, vLog types.Log) (err error) {
@@ -15,7 +16,7 @@ func ParseTransfer(chainId uint64, vLog types.Log) (err error) {
 
 	rentalInfo, err := dao.GetCurrentRentalInfoByAutherizationId(chainId, autherizationId.String())
 	if err != nil {
-		if gorm.IsRecordNotFoundError(err) {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			// AutherizationId not mint by marketplace
 			return nil
 		}
