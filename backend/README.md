@@ -10,8 +10,8 @@ Create a configuration file (e.g., `config.yaml`) with the necessary settings fo
 
 | Method | Endpoint                  | Description                                                       |
 | ------ | ------------------------- | ----------------------------------------------------------------- |
-| POST   | `/api/v1/devices/market`  | Retrieves a list of devices that are available on the market      |
-| POST   | `/api/v1/devices/listing` | Retrieves a list of devices listed by a specific owner            |
+| GET    | `/api/v1/devices/market`  | Retrieves a list of devices that are available on the market      |
+| GET    | `/api/v1/devices/listing` | Retrieves a list of devices listed by a specific owner            |
 | GET    | `/api/v1/devices/renting` | Retrieves a list of devices currently rented by a specific tenant |
 
 ## Run
