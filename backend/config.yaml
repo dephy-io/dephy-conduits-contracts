@@ -7,13 +7,13 @@ contracts:
   BASE_SEPOLIA:
     RPC: "wss://base-sepolia.g.alchemy.com/v2/_j5REyXi-XySkwLHp790Wvs9kBbxhUba"
     Marketplace:
-      address: "0x5606119e87B61228485b761b09AA7A48f7f48980"
-      start_at: 14052094
+      address: "0xd7B74EA2242e7e1918fc862997C30C7ef3Bd65C6"
+      start_at: 14230579
       query_history: true
       query_interval: 200000
     Application:
-      address: "0xed867DdA455093e40342F509f817494BC850a598"
-      start_at: 14052580
+      address: "0x704876F802d41c52753Ef708B336d5e572db77A3"
+      start_at: 14230342
       query_history: true
       query_interval: 200000
 

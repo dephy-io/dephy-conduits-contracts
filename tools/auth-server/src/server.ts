@@ -1,6 +1,6 @@
 import express from "express";
 // import axios from "axios";
-import { ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import IApplicationJson from "./IApplication.json";
 import AccessIdentitiesJson from "./AccessIdentities.json";
 
@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3155;
 const ACCESS_IDENTITIES =
   process.env.ACCESS_IDENTITIES || "0x4Cd640e4177a5d86B06BDB147E7efECFf3E478b3";
 const APPLICATION =
-  process.env.APPLICATION || "0xed867DdA455093e40342F509f817494BC850a598";
+  process.env.APPLICATION || "0x704876F802d41c52753Ef708B336d5e572db77A3";
 const RPC =
   process.env.RPC ||
   "https://base-sepolia.g.alchemy.com/v2/0ZS0OdXDqBpKt6wkusuFDyi0lLlTFRVf";
@@ -51,15 +51,24 @@ let cachedIdentities: {
 
 const updateIdenntities = async () => {
   try {
-    const appDeviceOwner = await applicationContract.getAppDeviceOwner(DEVICE);
-    const identities = await accessIdentitiesContract.getIdentities(
-      appDeviceOwner
+    const authorizations = await applicationContract.getAuthorizationsByDevice(
+      DEVICE
     );
-    cachedIdentities = identities;
+    const owners = await Promise.all(
+      authorizations.map(async (authorizationId: BigNumber) => {
+        return await applicationContract.ownerOf(authorizationId);
+      })
+    );
+    const identities = await Promise.all(
+      owners.map(async (owner: BigNumber) => {
+        return await accessIdentitiesContract.getIdentities(owner);
+      })
+    );
+    cachedIdentities = identities.flat();
   } catch (error) {
     console.error("Error in program:", error);
   }
-}
+};
 
 updateIdenntities();
 setInterval(updateIdenntities, 60 * 1000);

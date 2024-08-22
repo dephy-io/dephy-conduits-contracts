@@ -55,7 +55,7 @@ forge script script/Marketplace/Rent.s.sol --rpc-url base_sepolia --broadcast
 - cmd
 
 ```bash
-forge script script/Marketplace/Rent.s.sol --rpc-url base_sepolia --broadcast
+forge script script/AccessIdentities/AddIdentity.s.sol --rpc-url base_sepolia --broadcast
 ```
 
 5. Run auth server

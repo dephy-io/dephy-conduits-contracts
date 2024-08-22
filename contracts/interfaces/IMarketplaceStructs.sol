@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.24;
 
 interface IMarketplaceStructs {
@@ -26,7 +26,7 @@ interface IMarketplaceStructs {
     }
 
     struct RentalInfo {
-        uint256 instanceId;
+        uint256 autherizationId;
         uint256 startTime;
         uint256 endTime;
         uint256 rentalDays;

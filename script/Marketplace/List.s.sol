@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.24;
 
 import {Marketplace} from "../../contracts/Marketplace.sol";
@@ -22,13 +22,13 @@ contract List is Script {
     function setUp() public {
         ownerPrivateKey = vm.envUint("PRIVATE_KEY");
 
-        marketplace = Marketplace(0x5606119e87B61228485b761b09AA7A48f7f48980);
+        marketplace = Marketplace(0xd7B74EA2242e7e1918fc862997C30C7ef3Bd65C6);
 
-        device = 0x407156bB8154C5BFA8808125cA981dc257eCed54; // set your device here
-        minRentalDays = 2; // set min rental days
-        maxRentalDays = 2; // set max rental days
+        device = 0x4F34cd71bBE8034Ef4b0C863C072C529f7cC474e; // set your device here
+        minRentalDays = 1; // set min rental days
+        maxRentalDays = 10; // set max rental days
         rentCurrency = address(0); // only whitelisted currency, zero-address means bnb(native token)
-        dailyRent = 2*1e14; // set daily rent, here is 0.0001 BNB per day
+        dailyRent = 1*1e14; // set daily rent, here is 0.0001 BNB per day
         rentRecipient = vm.addr(ownerPrivateKey); // set rent receiver
     }
 

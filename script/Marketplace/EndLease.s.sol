@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.24;
 
 import {Marketplace} from "../../contracts/Marketplace.sol";
@@ -17,7 +17,7 @@ contract EndLease is Script {
     function setUp() public {
         ownerPrivateKey = vm.envUint("PRIVATE_KEY");
 
-        marketplace = Marketplace(0x5606119e87B61228485b761b09AA7A48f7f48980);
+        marketplace = Marketplace(0xd7B74EA2242e7e1918fc862997C30C7ef3Bd65C6);
 
         device = 0x15A02419160FfdAF3a5d77Ea7e3812ebcC4ED8d5; // set your device here
     }

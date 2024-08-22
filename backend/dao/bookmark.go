@@ -1,7 +1,6 @@
 package dao
 
 import (
-	"database/sql"
 	"dephy-conduits/model"
 )
 
@@ -27,16 +26,12 @@ func UpdateBookmark(chainId uint64, contract string, blockNumber uint64) (err er
 	return nil
 }
 
-func GetBookmark(chainId uint64, contract string) (_ uint64, err error) {
-	var bookmark *model.Bookmark
-	query := db.Where(&model.Bookmark{ChainId: chainId, Contract: contract}).Find(&bookmark)
-	if err = query.Error; err != nil {
-		return
+func GetBookmark(chainId uint64, contract string) (uint64, error) {
+	var bookmark model.Bookmark
+	err := db.Where(&model.Bookmark{ChainId: chainId, Contract: contract}).First(&bookmark).Error
+	if err != nil {
+		return 0, err
+	} else {
+		return bookmark.BlockNumber, nil
 	}
-
-	if query.RowsAffected == 0 {
-		return 0, sql.ErrNoRows
-	}
-
-	return bookmark.BlockNumber, nil
 }

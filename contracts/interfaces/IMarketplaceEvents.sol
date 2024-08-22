@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.24;
 
 interface IMarketplaceEvents {
@@ -26,7 +26,8 @@ interface IMarketplaceEvents {
 
     event Rent(
         address indexed device,
-        uint256 indexed instanceId,
+        uint256 indexed autherizationId,
+        address indexed tenant,
         uint256 startTime,
         uint256 endTime,
         uint256 rentalDays,
