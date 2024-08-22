@@ -18,7 +18,7 @@ contract Rent is Script {
 
     function setUp() public {
         tenantPrivateKey = 0x0c6cd1d3bd57be803801f5250eeb8374a30ac11537746995ca3da2a90676da24;
-        marketplace = Marketplace(0xd7B74EA2242e7e1918fc862997C30C7ef3Bd65C6);
+        marketplace = Marketplace(0xC6B5c98FD8A8C9d8aa2B0f79a66EC55b0D2dad69);
 
         device = 0x4F34cd71bBE8034Ef4b0C863C072C529f7cC474e; // set your device here
         tenant = vm.addr(tenantPrivateKey); // set tenant address, default is caller

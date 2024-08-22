@@ -37,14 +37,21 @@
     "name": "burn",
     "inputs": [
       { "name": "device", "type": "address", "internalType": "address" },
-      {
-        "name": "authorizationId",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
+      { "name": "accessId", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "getAccessesByDevice",
+    "inputs": [
+      { "name": "device", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [
+      { "name": "", "type": "uint256[]", "internalType": "uint256[]" }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -53,17 +60,6 @@
       { "name": "tokenId", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getAuthorizationsByDevice",
-    "inputs": [
-      { "name": "device", "type": "address", "internalType": "address" }
-    ],
-    "outputs": [
-      { "name": "", "type": "uint256[]", "internalType": "uint256[]" }
-    ],
     "stateMutability": "view"
   },
   {
@@ -80,13 +76,9 @@
   },
   {
     "type": "function",
-    "name": "getDeviceByAuthorizationId",
+    "name": "getDeviceByAccessId",
     "inputs": [
-      {
-        "name": "authorizationId",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
+      { "name": "accessId", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
     "stateMutability": "view"

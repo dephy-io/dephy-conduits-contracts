@@ -86,7 +86,7 @@ contract MarketplaceTest is Test {
         _list();
         IMarketplaceStructs.RentalInfo memory rental = _rent(5, 5 ether);
 
-        assertEq(rental.autherizationId, 1);
+        assertEq(rental.accessId, 1);
         assertEq(rental.startTime, block.timestamp);
         assertEq(rental.endTime, block.timestamp + 5 days);
         assertEq(rental.rentalDays, 5);

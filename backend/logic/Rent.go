@@ -24,7 +24,7 @@ func ParseRent(chainId uint64, vLog types.Log) (err error) {
 	}
 
 	device := common.BytesToAddress(vLog.Topics[1].Bytes()).Hex()
-	autherizationId := new(big.Int).SetBytes(vLog.Topics[2].Bytes())
+	accessId := new(big.Int).SetBytes(vLog.Topics[2].Bytes())
 	tenant := common.BytesToAddress(vLog.Topics[3].Bytes()).Hex()
 
 	rentalInfo := &model.RentalInfo{
@@ -32,7 +32,7 @@ func ParseRent(chainId uint64, vLog types.Log) (err error) {
 		TxHash:          vLog.TxHash.Hex(),
 		BlockNumber:     vLog.BlockNumber,
 		Device:          device,
-		AutherizationId: autherizationId.String(),
+		AccessId: accessId.String(),
 		Tenant:          tenant,
 		StartTime:       eventData.StartTime.String(),
 		EndTime:         eventData.EndTime.String(),

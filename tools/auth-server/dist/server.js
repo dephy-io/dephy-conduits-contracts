@@ -21,9 +21,9 @@ const AccessIdentities_json_1 = __importDefault(require("./AccessIdentities.json
 const DEVICE = process.env.DEVICE;
 const PORT = process.env.PORT || 3155;
 const ACCESS_IDENTITIES = process.env.ACCESS_IDENTITIES || "0x4Cd640e4177a5d86B06BDB147E7efECFf3E478b3";
-const APPLICATION = process.env.APPLICATION || "0x704876F802d41c52753Ef708B336d5e572db77A3";
+const APPLICATION = process.env.APPLICATION || "0xf628B6024af73D0f29c251e0fB306e5f8bA6FcFA";
 const RPC = process.env.RPC ||
-    "https://base-sepolia.g.alchemy.com/v2/0ZS0OdXDqBpKt6wkusuFDyi0lLlTFRVf";
+    "https://base-sepolia-rpc.publicnode.com";
 if (!DEVICE) {
     throw new Error("env variable `DEVICE` undefined");
 }
@@ -45,9 +45,9 @@ const accessIdentitiesContract = new ethers_1.ethers.Contract(ACCESS_IDENTITIES,
 let cachedIdentities = [];
 const updateIdenntities = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const authorizations = yield applicationContract.getAuthorizationsByDevice(DEVICE);
-        const owners = yield Promise.all(authorizations.map((authorizationId) => __awaiter(void 0, void 0, void 0, function* () {
-            return yield applicationContract.ownerOf(authorizationId);
+        const accessIds = yield applicationContract.getAccessesByDevice(DEVICE);
+        const owners = yield Promise.all(accessIds.map((accessId) => __awaiter(void 0, void 0, void 0, function* () {
+            return yield applicationContract.ownerOf(accessId);
         })));
         const identities = yield Promise.all(owners.map((owner) => __awaiter(void 0, void 0, void 0, function* () {
             return yield accessIdentitiesContract.getIdentities(owner);

@@ -13,7 +13,7 @@ type AppConfig struct {
 	Port      int              `mapstructure:"port"`
 	Version   string           `mapstructure:"version"`
 	Contracts *ContractsConfig `mapstructure:"contracts"`
-	Postgres  *PostgresConfig  `mapstructure:"postgre"`
+	Postgres  *PostgresConfig  `mapstructure:"postgres"`
 }
 
 type ContractsConfig struct {

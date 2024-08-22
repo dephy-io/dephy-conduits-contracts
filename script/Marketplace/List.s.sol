@@ -22,13 +22,13 @@ contract List is Script {
     function setUp() public {
         ownerPrivateKey = vm.envUint("PRIVATE_KEY");
 
-        marketplace = Marketplace(0xd7B74EA2242e7e1918fc862997C30C7ef3Bd65C6);
+        marketplace = Marketplace(0xC6B5c98FD8A8C9d8aa2B0f79a66EC55b0D2dad69);
 
-        device = 0x4F34cd71bBE8034Ef4b0C863C072C529f7cC474e; // set your device here
-        minRentalDays = 1; // set min rental days
-        maxRentalDays = 10; // set max rental days
-        rentCurrency = address(0); // only whitelisted currency, zero-address means bnb(native token)
-        dailyRent = 1*1e14; // set daily rent, here is 0.0001 BNB per day
+        device = 0xa05c0E70158481BE3F37b114a175A36c10B594f3; // set your device here
+        minRentalDays = 5; // set min rental days
+        maxRentalDays = 8; // set max rental days
+        rentCurrency = address(0); // only whitelisted currency, zero-address means eth(native token)
+        dailyRent = 2*1e16; // set daily rent
         rentRecipient = vm.addr(ownerPrivateKey); // set rent receiver
     }
 

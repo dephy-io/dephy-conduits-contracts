@@ -17,7 +17,7 @@ contract EndLease is Script {
     function setUp() public {
         ownerPrivateKey = vm.envUint("PRIVATE_KEY");
 
-        marketplace = Marketplace(0xd7B74EA2242e7e1918fc862997C30C7ef3Bd65C6);
+        marketplace = Marketplace(0xC6B5c98FD8A8C9d8aa2B0f79a66EC55b0D2dad69);
 
         device = 0x15A02419160FfdAF3a5d77Ea7e3812ebcC4ED8d5; // set your device here
     }

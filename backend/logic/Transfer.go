@@ -12,12 +12,12 @@ import (
 
 func ParseTransfer(chainId uint64, vLog types.Log) (err error) {
 	to := common.BytesToAddress(vLog.Topics[2].Bytes()).Hex()
-	autherizationId := new(big.Int).SetBytes(vLog.Topics[3].Bytes())
+	accessId := new(big.Int).SetBytes(vLog.Topics[3].Bytes())
 
-	rentalInfo, err := dao.GetCurrentRentalInfoByAutherizationId(chainId, autherizationId.String())
+	rentalInfo, err := dao.GetCurrentRentalInfoByAccessId(chainId, accessId.String())
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			// AutherizationId not mint by marketplace
+			// AccessId not mint by marketplace
 			return nil
 		}
 		return

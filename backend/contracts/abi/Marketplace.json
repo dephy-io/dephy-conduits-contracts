@@ -141,7 +141,7 @@
         "internalType": "struct IMarketplaceStructs.RentalInfo",
         "components": [
           {
-            "name": "autherizationId",
+            "name": "accessId",
             "type": "uint256",
             "internalType": "uint256"
           },
@@ -522,7 +522,7 @@
         "internalType": "address"
       },
       {
-        "name": "autherizationId",
+        "name": "accessId",
         "type": "uint256",
         "indexed": true,
         "internalType": "uint256"

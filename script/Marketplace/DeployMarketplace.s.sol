@@ -17,7 +17,7 @@ contract DeployMarketplace is Script {
         deployerPrivateKey = vm.envUint("PRIVATE_KEY");
 
         initialOwner = vm.addr(deployerPrivateKey);
-        application = 0x704876F802d41c52753Ef708B336d5e572db77A3;
+        application = 0xf628B6024af73D0f29c251e0fB306e5f8bA6FcFA;
         treasury = 0x3F3786B67DC1874C3Bd8e8CD61F5eea87604470F;
         feePoints = 100; // 100/10000 = 10%
     }

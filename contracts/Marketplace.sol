@@ -228,12 +228,12 @@ contract Marketplace is IMarketplace, Ownable {
         );
 
         // Mint app device to tenant
-        uint256 autherizationId = APPLICATION.mint(tenant, device);
+        uint256 accessId = APPLICATION.mint(tenant, device);
 
         uint256 startTime = block.timestamp;
         uint256 endTime = block.timestamp + rentalDays * 1 days;
         _rentals[device] = RentalInfo({
-            autherizationId: autherizationId,
+            accessId: accessId,
             startTime: startTime,
             endTime: endTime,
             rentalDays: rentalDays,
@@ -246,7 +246,7 @@ contract Marketplace is IMarketplace, Ownable {
         // Pay rent
         _payRent(listing, _rentals[device], prepaidRent);
 
-        emit Rent(device, autherizationId, tenant, startTime, endTime, rentalDays, prepaidRent);
+        emit Rent(device, accessId, tenant, startTime, endTime, rentalDays, prepaidRent);
     }
 
     /**
@@ -285,7 +285,7 @@ contract Marketplace is IMarketplace, Ownable {
         );
 
         // Burn tenant's app device
-        APPLICATION.burn(device, rental.autherizationId);
+        APPLICATION.burn(device, rental.accessId);
         rental.status = RentalStatus.EndedOrNotExist;
 
         emit EndLease(device, msg.sender);

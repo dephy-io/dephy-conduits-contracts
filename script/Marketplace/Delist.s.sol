@@ -17,7 +17,7 @@ contract Delist is Script {
     function setUp() public {
         ownerPrivateKey = vm.envUint("PRIVATE_KEY");
 
-        marketplace = Marketplace(0xd7B74EA2242e7e1918fc862997C30C7ef3Bd65C6);
+        marketplace = Marketplace(0xC6B5c98FD8A8C9d8aa2B0f79a66EC55b0D2dad69);
 
         device = 0x407156bB8154C5BFA8808125cA981dc257eCed54; // set your device here
     }

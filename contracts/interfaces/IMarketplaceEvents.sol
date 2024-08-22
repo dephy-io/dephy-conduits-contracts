@@ -26,7 +26,7 @@ interface IMarketplaceEvents {
 
     event Rent(
         address indexed device,
-        uint256 indexed autherizationId,
+        uint256 indexed accessId,
         address indexed tenant,
         uint256 startTime,
         uint256 endTime,
