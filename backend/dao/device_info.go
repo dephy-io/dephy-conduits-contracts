@@ -2,8 +2,9 @@ package dao
 
 import "dephy-conduits/model"
 
-func CreateDeviceInfo(deviceInfo *model.DeviceInfo) error {
-	return db.Create(deviceInfo).Error
+func CreateOrIgnoreDeviceInfo(deviceInfo *model.DeviceInfo) error {
+	result := db.Where("chain_id = ? AND device = ?", deviceInfo.ChainId, deviceInfo.Device).FirstOrCreate(&deviceInfo)
+	return result.Error
 }
 
 func GetDeviceInfo(chainId uint64, device string) (*model.DeviceInfo, error) {
@@ -12,11 +13,6 @@ func GetDeviceInfo(chainId uint64, device string) (*model.DeviceInfo, error) {
 		return nil, err
 	}
 	return &deviceInfo, nil
-}
-
-func CreateOrIgnoreDeviceInfo(deviceInfo *model.DeviceInfo) error {
-	result := db.Where("chain_id = ? AND device = ?", deviceInfo.ChainId, deviceInfo.Device).FirstOrCreate(&deviceInfo)
-	return result.Error
 }
 
 func GetAvailableMarketDevices(chainId uint64) ([]model.DeviceInfo, error) {

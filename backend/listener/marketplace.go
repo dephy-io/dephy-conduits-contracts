@@ -59,14 +59,18 @@ func MarketplaceListener(chainId uint64) {
 		logs := make(chan types.Log)
 		sub, err := ethClient.SubscribeFilterLogs(context.Background(), query, logs)
 		if err != nil {
-			log.Fatalf("[%d]: SubscribeFilterLogs Marketplace failed, %v", chainId, err)
+			log.Printf("[%d]: SubscribeFilterLogs Marketplace failed, %v", chainId, err)
+			time.Sleep(2000 * time.Millisecond)
+			continue
 		}
 		log.Printf("[%d]: Listener Marketplace started.", chainId)
 
+		outerLoop:
 		for {
 			select {
 			case err := <-sub.Err():
 				log.Printf("[%d]: Listener Marketplace received error: %v", chainId, err)
+				break outerLoop
 
 			case vLog := <-logs:
 				if vLog.BlockNumber > bookmark {

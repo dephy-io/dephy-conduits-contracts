@@ -24,11 +24,11 @@ contract List is Script {
 
         marketplace = Marketplace(0xC6B5c98FD8A8C9d8aa2B0f79a66EC55b0D2dad69);
 
-        device = 0xa05c0E70158481BE3F37b114a175A36c10B594f3; // set your device here
-        minRentalDays = 5; // set min rental days
-        maxRentalDays = 8; // set max rental days
+        device = 0x683C76714F1560BdB37EEf318F725EF44382C279; // set your device here
+        minRentalDays = 2; // set min rental days
+        maxRentalDays = 4; // set max rental days
         rentCurrency = address(0); // only whitelisted currency, zero-address means eth(native token)
-        dailyRent = 2*1e16; // set daily rent
+        dailyRent = 7*1e12; // set daily rent
         rentRecipient = vm.addr(ownerPrivateKey); // set rent receiver
     }
 

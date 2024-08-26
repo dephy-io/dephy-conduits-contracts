@@ -53,14 +53,18 @@ func ApplicationListener(chainId uint64) {
 		logs := make(chan types.Log)
 		sub, err := ethClient.SubscribeFilterLogs(context.Background(), query, logs)
 		if err != nil {
-			log.Fatalf("[%d]: SubscribeFilterLogs Application failed, %v", chainId, err)
+			log.Printf("[%d]: SubscribeFilterLogs Application failed, %v", chainId, err)
+			time.Sleep(2000 * time.Millisecond)
+			continue
 		}
 		log.Printf("[%d]: Listener Application started.", chainId)
-
+		
+		outerLoop:
 		for {
 			select {
 			case err := <-sub.Err():
 				log.Printf("[%d]: Listener Application received error: %v", chainId, err)
+				break outerLoop
 
 			case vLog := <-logs:
 				if vLog.BlockNumber > bookmark {

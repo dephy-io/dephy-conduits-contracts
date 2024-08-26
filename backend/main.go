@@ -23,7 +23,7 @@ func main() {
 	}
 
 	if err := dao.Init(config.Config.Postgres); err != nil {
-		log.Println("Init postgres failed, ", err)
+		log.Fatalln("Init postgres failed, ", err)
 		return
 	}
 

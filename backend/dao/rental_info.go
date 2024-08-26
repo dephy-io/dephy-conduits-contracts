@@ -1,9 +1,18 @@
 package dao
 
-import "dephy-conduits/model"
+import (
+	"dephy-conduits/model"
+
+	"gorm.io/gorm/clause"
+)
 
 func CreateRentalInfo(rentalInfo *model.RentalInfo) error {
-	return db.Create(rentalInfo).Error
+	err := db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "tx_hash"}},
+		DoNothing: true,                               
+	}).Create(rentalInfo).Error
+
+	return err
 }
 
 func UpdateRentalInfo(rentalInfo *model.RentalInfo) error {
