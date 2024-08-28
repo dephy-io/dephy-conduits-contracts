@@ -46,7 +46,7 @@ func GetOwnerListingDevices(chainId uint64, owner string) ([]model.DeviceInfo, e
 		Where("listing_infos.owner = ? AND listing_infos.relisted = ? AND listing_infos.listing_status != ?", owner, false, model.LSWithdrawnOrNotExist).
 		Where("device_infos.chain_id = ?", chainId).
 		Preload("ListingInfo").
-		Preload("RentalInfo").
+		Preload("RentalInfo", "rental_status != ?", model.RSEndedOrNotExist).
 		Find(&devices).Error
 
 	if err != nil {
