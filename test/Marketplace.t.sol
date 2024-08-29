@@ -2,11 +2,10 @@
 pragma solidity ^0.8.24;
 
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
-import {IMarketplaceStructs} from "../contracts/interfaces/IMarketplaceStructs.sol";
+import {IMarketplace} from "../contracts/IMarketplace.sol";
 import {Marketplace} from "../contracts/Marketplace.sol";
 import {MockProduct} from "./mocks/MockProduct.sol";
 import {MockProductFactory} from "./mocks/MockProductFactory.sol";
-import {MockApplication} from "./mocks/MockApplication.sol";
 import "forge-std/src/Test.sol";
 
 contract MarketplaceTest is Test {
@@ -18,7 +17,6 @@ contract MarketplaceTest is Test {
     address deviceOwner;
 
     Marketplace marketplace;
-    MockApplication application;
 
     address tenant;
 
@@ -40,13 +38,11 @@ contract MarketplaceTest is Test {
             deviceOwner
         );
 
-        MockApplication applicationImpl = new MockApplication();
-        application = MockApplication(Clones.clone(address(applicationImpl)));
-        application.initialize(address(productFactory), "Marketplace", "MKP");
-
         marketplace = new Marketplace(
             address(this),
-            address(application),
+            address(productFactory),
+            "Marketplace",
+            "MKTP",
             new address[](0),
             payable(treasury),
             feePoints
@@ -55,7 +51,7 @@ contract MarketplaceTest is Test {
 
     function testList() public {
         // Check that the token is listed
-        IMarketplaceStructs.ListingInfo memory listing = _list();
+        IMarketplace.ListingInfo memory listing = _list();
         assertEq(listing.owner, deviceOwner);
         assertEq(listing.minRentalDays, 1);
         assertEq(listing.maxRentalDays, 30);
@@ -63,7 +59,7 @@ contract MarketplaceTest is Test {
         assertEq(listing.dailyRent, 1 ether);
         assertEq(
             uint256(listing.status),
-            uint256(IMarketplaceStructs.ListingStatus.Listing)
+            uint256(IMarketplace.ListingStatus.Listing)
         );
     }
 
@@ -74,17 +70,17 @@ contract MarketplaceTest is Test {
         marketplace.delist(device);
 
         // Check that the token is delisted
-        IMarketplaceStructs.ListingInfo memory listing = marketplace
+        IMarketplace.ListingInfo memory listing = marketplace
             .getListingInfo(device);
         assertEq(
             uint256(listing.status),
-            uint256(IMarketplaceStructs.ListingStatus.Delisted)
+            uint256(IMarketplace.ListingStatus.Delisted)
         );
     }
 
     function testRent() public {
         _list();
-        IMarketplaceStructs.RentalInfo memory rental = _rent(5, 5 ether);
+        IMarketplace.RentalInfo memory rental = _rent(5, 5 ether);
 
         assertEq(rental.accessId, 1);
         assertEq(rental.startTime, block.timestamp);
@@ -93,7 +89,7 @@ contract MarketplaceTest is Test {
         assertEq(rental.dailyRent, 1 ether);
         assertEq(
             uint256(rental.status),
-            uint256(IMarketplaceStructs.RentalStatus.Renting)
+            uint256(IMarketplace.RentalStatus.Renting)
         );
     }
 
@@ -109,7 +105,7 @@ contract MarketplaceTest is Test {
 
     function testPayRent() public {
         _list();
-        IMarketplaceStructs.RentalInfo memory rental = _rent(8, 5 ether);
+        IMarketplace.RentalInfo memory rental = _rent(8, 5 ether);
 
         assertEq(rental.startTime, block.timestamp);
         assertEq(rental.endTime, block.timestamp + 8 days); // 5 initial days + 3 additional days
@@ -118,7 +114,7 @@ contract MarketplaceTest is Test {
         assertEq(rental.totalPaidRent, 5 ether);
         assertEq(
             uint256(rental.status),
-            uint256(IMarketplaceStructs.RentalStatus.Renting)
+            uint256(IMarketplace.RentalStatus.Renting)
         );
 
         vm.prank(tenant);
@@ -139,11 +135,11 @@ contract MarketplaceTest is Test {
         marketplace.endLease(device);
 
         // Check that the lease is ended
-        IMarketplaceStructs.RentalInfo memory rental = marketplace
+        IMarketplace.RentalInfo memory rental = marketplace
             .getRentalInfo(device);
         assertEq(
             uint256(rental.status),
-            uint256(IMarketplaceStructs.RentalStatus.EndedOrNotExist)
+            uint256(IMarketplace.RentalStatus.EndedOrNotExist)
         );
     }
 
@@ -154,17 +150,17 @@ contract MarketplaceTest is Test {
         marketplace.withdraw(device);
 
         // Check that the token is withdrawn
-        IMarketplaceStructs.ListingInfo memory listing = marketplace
+        IMarketplace.ListingInfo memory listing = marketplace
             .getListingInfo(
                 device
             );
         assertEq(
             uint256(listing.status),
-            uint256(IMarketplaceStructs.ListingStatus.WithdrawnOrNotExist)
+            uint256(IMarketplace.ListingStatus.WithdrawnOrNotExist)
         );
     }
 
-    function _list() internal returns (IMarketplaceStructs.ListingInfo memory) {
+    function _list() internal returns (IMarketplace.ListingInfo memory) {
         uint256 minRentalDays = 1;
         uint256 maxRentalDays = 30;
         address rentCurrency = address(0);
@@ -186,13 +182,14 @@ contract MarketplaceTest is Test {
         return marketplace.getListingInfo(device);
     }
 
-    function _rent(uint256 rentalDays, uint256 prepaidRent) internal returns (IMarketplaceStructs.RentalInfo memory) {
+    function _rent(uint256 rentalDays, uint256 prepaidRent) internal returns (IMarketplace.RentalInfo memory) {
         vm.prank(tenant);
         marketplace.rent{value: prepaidRent}(
             device,
             tenant,
             rentalDays,
-            prepaidRent
+            prepaidRent,
+            "http://test.com"
         );
 
         return marketplace.getRentalInfo(device);
