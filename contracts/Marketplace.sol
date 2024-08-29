@@ -5,13 +5,11 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {IApplication} from "./interfaces/IApplication.sol";
-import {IMarketplace} from "./interfaces/IMarketplace.sol";
+import {ApplicationBase} from "./access/ApplicationBase.sol";
+import {IMarketplace} from "./IMarketplace.sol";
 
-contract Marketplace is IMarketplace, Ownable {
+contract Marketplace is IMarketplace, ApplicationBase, Ownable {
     using SafeERC20 for IERC20;
-
-    IApplication public immutable APPLICATION;
 
     address public constant NATIVE_TOKEN = address(0);
 
@@ -38,12 +36,13 @@ contract Marketplace is IMarketplace, Ownable {
 
     constructor(
         address initialOwner,
-        address application,
+        address productFactory,
+        string memory name,
+        string memory symbol,
         address[] memory rentCurrencies,
         address payable treasury,
         uint256 feePoints
-    ) Ownable(initialOwner) {
-        APPLICATION = IApplication(application);
+    ) Ownable(initialOwner) ApplicationBase(productFactory, name, symbol) {
         for (uint256 i = 0; i < rentCurrencies.length; i++) {
             supportedRentCurrencies[rentCurrencies[i]] = true;
         }
@@ -138,8 +137,6 @@ contract Marketplace is IMarketplace, Ownable {
             status: ListingStatus.Listing
         });
 
-        _transferDevice(device, msg.sender, address(this));
-
         emit List(
             msg.sender,
             device,
@@ -208,7 +205,8 @@ contract Marketplace is IMarketplace, Ownable {
         address device,
         address tenant,
         uint256 rentalDays,
-        uint256 prepaidRent
+        uint256 prepaidRent,
+        string memory accessURI
     ) public payable {
         require(
             _rentals[device].status == RentalStatus.EndedOrNotExist,
@@ -227,8 +225,8 @@ contract Marketplace is IMarketplace, Ownable {
             "insufficient prepaid rent"
         );
 
-        // Mint app device to tenant
-        uint256 accessId = APPLICATION.mint(tenant, device);
+        // grant access to tenant
+        uint256 accessId = _grantAccess(tenant, device, accessURI);
 
         uint256 startTime = block.timestamp;
         uint256 endTime = block.timestamp + rentalDays * 1 days;
@@ -246,16 +244,21 @@ contract Marketplace is IMarketplace, Ownable {
         // Pay rent
         _payRent(listing, _rentals[device], prepaidRent);
 
-        emit Rent(device, accessId, tenant, startTime, endTime, rentalDays, prepaidRent);
+        emit Rent(
+            device,
+            accessId,
+            tenant,
+            startTime,
+            endTime,
+            rentalDays,
+            prepaidRent
+        );
     }
 
     /**
      * @inheritdoc IMarketplace
      */
-    function payRent(
-        address device,
-        uint256 rent_
-    ) public payable {
+    function payRent(address device, uint256 rent_) public payable {
         ListingInfo memory listing = _listings[device];
         RentalInfo storage rental = _rentals[device];
         require(
@@ -284,8 +287,8 @@ contract Marketplace is IMarketplace, Ownable {
             "cannot end lease"
         );
 
-        // Burn tenant's app device
-        APPLICATION.burn(device, rental.accessId);
+        // revoke tenant's access
+        _revokeAccess(device, rental.accessId);
         rental.status = RentalStatus.EndedOrNotExist;
 
         emit EndLease(device, msg.sender);
@@ -303,8 +306,6 @@ contract Marketplace is IMarketplace, Ownable {
             "device has tenant"
         );
         listing.status = ListingStatus.WithdrawnOrNotExist;
-
-        _transferDevice(device, address(this), listing.owner);
 
         emit Withdraw(msg.sender, device);
     }
@@ -347,16 +348,5 @@ contract Marketplace is IMarketplace, Ownable {
         }
 
         rental.totalPaidRent += rent_;
-    }
-
-    function _transferDevice(
-        address device,
-        address from,
-        address to
-    ) internal {
-        (address product, uint256 tokenId) = APPLICATION.getDeviceBinding(
-            device
-        );
-        IERC721(product).transferFrom(from, to, tokenId);
     }
 }

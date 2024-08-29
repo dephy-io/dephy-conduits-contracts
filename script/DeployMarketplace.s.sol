@@ -8,7 +8,9 @@ contract DeployMarketplace is Script {
     uint256 deployerPrivateKey;
 
     address initialOwner;
-    address application;
+    address productFactory;
+    string name;
+    string symbol;
     address[] rentCurrencies;
     address treasury;
     uint256 feePoints; 
@@ -17,7 +19,9 @@ contract DeployMarketplace is Script {
         deployerPrivateKey = vm.envUint("PRIVATE_KEY");
 
         initialOwner = vm.addr(deployerPrivateKey);
-        application = 0xf628B6024af73D0f29c251e0fB306e5f8bA6FcFA;
+        productFactory = 0x1dFC014B1852f0c81d11A3535335f1984cD4CE37;
+        name = "Marketplace";
+        symbol = "MKTP";
         treasury = 0x3F3786B67DC1874C3Bd8e8CD61F5eea87604470F;
         feePoints = 100; // 100/10000 = 10%
     }
@@ -26,7 +30,9 @@ contract DeployMarketplace is Script {
         vm.startBroadcast(deployerPrivateKey);
         new Marketplace(
             initialOwner,
-            application,
+            productFactory,
+            name,
+            symbol,
             rentCurrencies,
             payable(treasury),
             feePoints
