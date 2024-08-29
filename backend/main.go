@@ -28,10 +28,8 @@ func main() {
 	}
 
 	listener.QueryMarketplaceEvents(constants.BASE_SEPOLIA)
-	listener.QueryApplicationEvents(constants.BASE_SEPOLIA)
 
 	go listener.MarketplaceListener(constants.BASE_SEPOLIA)
-	go listener.ApplicationListener(constants.BASE_SEPOLIA)
 
 	r := router.SetupRouter(config.Config.Mode)
 	if err := r.Run(fmt.Sprintf(":%d", config.Config.Port)); err != nil {

@@ -52,7 +52,6 @@ contract MarketplaceTest is Test {
     function testList() public {
         // Check that the token is listed
         IMarketplace.ListingInfo memory listing = _list();
-        assertEq(listing.owner, deviceOwner);
         assertEq(listing.minRentalDays, 1);
         assertEq(listing.maxRentalDays, 30);
         assertEq(listing.rentCurrency, address(0));

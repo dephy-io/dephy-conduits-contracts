@@ -20,7 +20,6 @@ type ContractsConfig struct {
 	BASE_SEPOLIA struct {
 		RPC         string
 		Marketplace *ContractConfig
-		Application *ContractConfig
 	}
 }
 
