@@ -50,6 +50,12 @@ contract Marketplace is IMarketplace, ApplicationBase, Ownable {
         _feePoints = feePoints;
     }
 
+    modifier onlyDeviceOwner(address device) {
+        (address product, uint256 tokenId) = getDeviceBinding(device);
+        require(IERC721(product).ownerOf(tokenId) == msg.sender, "not device owner");
+        _;
+    }
+
     /**
      * @inheritdoc IMarketplace
      */
@@ -114,7 +120,7 @@ contract Marketplace is IMarketplace, ApplicationBase, Ownable {
         address rentCurrency,
         uint256 dailyRent,
         address rentRecipient
-    ) public {
+    ) public onlyDeviceOwner(device) {
         require(
             _listings[device].status == ListingStatus.WithdrawnOrNotExist, // Never listed or withdrawn
             "token already listed"
@@ -128,7 +134,6 @@ contract Marketplace is IMarketplace, ApplicationBase, Ownable {
         );
 
         _listings[device] = ListingInfo({
-            owner: msg.sender,
             minRentalDays: minRentalDays,
             maxRentalDays: maxRentalDays,
             rentCurrency: rentCurrency,
@@ -151,9 +156,8 @@ contract Marketplace is IMarketplace, ApplicationBase, Ownable {
     /**
      * @inheritdoc IMarketplace
      */
-    function delist(address device) public {
+    function delist(address device) public onlyDeviceOwner(device) {
         ListingInfo storage listing = _listings[device];
-        require(listing.owner == msg.sender, "not listing owner");
         listing.status = ListingStatus.Delisted;
 
         emit Delist(msg.sender, device);
@@ -169,9 +173,8 @@ contract Marketplace is IMarketplace, ApplicationBase, Ownable {
         address rentCurrency,
         uint256 dailyRent,
         address rentRecipient
-    ) public {
+    ) public onlyDeviceOwner(device) {
         ListingInfo storage listing = _listings[device];
-        require(listing.owner == msg.sender, "not listing owner");
         require(minRentalDays > 0, "invalid minimum rental days");
         require(maxRentalDays >= minRentalDays, "invalid maximum rental days");
         require(
@@ -297,10 +300,9 @@ contract Marketplace is IMarketplace, ApplicationBase, Ownable {
     /**
      * @inheritdoc IMarketplace
      */
-    function withdraw(address device) public {
+    function withdraw(address device) public onlyDeviceOwner(device) {
         ListingInfo storage listing = _listings[device];
         RentalInfo storage rental = _rentals[device];
-        require(listing.owner == msg.sender, "not listing owner");
         require(
             rental.status == RentalStatus.EndedOrNotExist,
             "device has tenant"

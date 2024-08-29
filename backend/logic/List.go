@@ -34,7 +34,7 @@ func ParseList(chainId uint64, vLog types.Log) (err error) {
 	owner := common.BytesToAddress(vLog.Topics[1].Bytes()).Hex()
 	device := common.BytesToAddress(vLog.Topics[2].Bytes()).Hex()
 
-	product, tokenId, err := GetDeviceBinding(chainId, device)
+	product, tokenId, err := getDeviceBinding(chainId, device)
 	if err != nil {
 		return
 	}
@@ -72,10 +72,10 @@ func ParseList(chainId uint64, vLog types.Log) (err error) {
 	return
 }
 
-func GetDeviceBinding(chainId uint64, device string) (string, string, error) {
+func getDeviceBinding(chainId uint64, device string) (string, string, error) {
 	var contract common.Address
 	if chainId == constants.BASE_SEPOLIA {
-		contract = common.HexToAddress(config.Config.Contracts.BASE_SEPOLIA.Application.Address)
+		contract = common.HexToAddress(config.Config.Contracts.BASE_SEPOLIA.Marketplace.Address)
 	} else {
 		return "", "", errors.New("unsupported chain id")
 	}
@@ -88,7 +88,7 @@ func GetDeviceBinding(chainId uint64, device string) (string, string, error) {
 
 	deviceAddress := common.HexToAddress(device)
 
-	callData, err := contracts.AbiApplication.Pack("getDeviceBinding", deviceAddress)
+	callData, err := contracts.AbiMarketplace.Pack("getDeviceBinding", deviceAddress)
 	if err != nil {
 		return "", "", err
 	}
@@ -116,7 +116,7 @@ func GetDeviceBinding(chainId uint64, device string) (string, string, error) {
 		tokenId *big.Int
 	)
 	output := []interface{}{&product, &tokenId}
-	err = contracts.AbiApplication.UnpackIntoInterface(&output, "getDeviceBinding", result)
+	err = contracts.AbiMarketplace.UnpackIntoInterface(&output, "getDeviceBinding", result)
 	if err != nil {
 		return "", "", err
 	}

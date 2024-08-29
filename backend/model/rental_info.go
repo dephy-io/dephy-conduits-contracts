@@ -8,6 +8,7 @@ type RentalInfo struct {
 	BlockNumber   uint64       `json:"block_number"`
 	Device        string       `json:"device" gorm:"type:varchar(42)"`
 	AccessId      string       `json:"access_id" gorm:"type:varchar(255)"`
+	AccessURI     string       `json:"access_uri" gorm:"type:varchar(2047)"`
 	Tenant        string       `json:"tenant" gorm:"type:varchar(42)"`
 	StartTime     string       `json:"start_time" gorm:"type:varchar(255)"`
 	EndTime       string       `json:"end_time" gorm:"type:varchar(255)"`

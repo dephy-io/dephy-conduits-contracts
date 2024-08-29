@@ -16,7 +16,6 @@ interface IMarketplace {
     }
 
     struct ListingInfo {
-        address owner;
         uint256 minRentalDays;
         uint256 maxRentalDays;
         address rentCurrency;

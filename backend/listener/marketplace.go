@@ -26,6 +26,7 @@ var (
 	topicPayRent  = crypto.Keccak256Hash([]byte("PayRent(address,uint256)"))
 	topicEndLease = crypto.Keccak256Hash([]byte("EndLease(address,address)"))
 	topicWithdraw = crypto.Keccak256Hash([]byte("Withdraw(address,address)"))
+	topicTransfer = crypto.Keccak256Hash([]byte("Transfer(address,address,uint256)"))
 )
 
 func MarketplaceListener(chainId uint64) {
@@ -136,6 +137,19 @@ func MarketplaceListener(chainId uint64) {
 					} else {
 						log.Printf("[%d]: <Withdraw> handled.", chainId)
 					}
+				} else if vLog.Topics[0] == topicTransfer {
+					from := common.BytesToAddress(vLog.Topics[1].Bytes())
+					to := common.BytesToAddress(vLog.Topics[2].Bytes())
+					if (from != common.Address{} && to != common.Address{}) {
+						// exclude mint and burn, only handle pure ownership transfer
+						log.Printf("[%d]: <Transfer> received.", chainId)
+						err = logic.ParseTransfer(chainId, vLog)
+						if err != nil {
+							log.Fatalf("[%d]: <Transfer> failed to handle, %v", chainId, err)
+						} else {
+							log.Printf("[%d]: <Transfer> handled.", chainId)
+						}
+					}
 				}
 			}
 		}
@@ -197,6 +211,7 @@ func QueryMarketplaceEvents(chainId uint64) {
 		countPayRent  = 0
 		countEndLease = 0
 		countWithdraw = 0
+		countTransfer = 0
 	)
 	for {
 		_endAt.Add(_startAt, big.NewInt(contractConfig.QueryInterval))
@@ -273,6 +288,17 @@ func QueryMarketplaceEvents(chainId uint64) {
 				} else {
 					countWithdraw++
 				}
+			} else if historyLog.Topics[0] == topicTransfer {
+				from := common.BytesToAddress(historyLog.Topics[1].Bytes())
+				to := common.BytesToAddress(historyLog.Topics[2].Bytes())
+				if (from != common.Address{} && to != common.Address{}) {
+					err = logic.ParseTransfer(chainId, historyLog)
+					if err != nil {
+						log.Fatalf("[%d]: ParseTransfer failed, %v", chainId, err)
+					} else {
+						countTransfer++
+					}
+				}
 			}
 		}
 
@@ -303,4 +329,5 @@ func QueryMarketplaceEvents(chainId uint64) {
 	log.Printf("[%d]: Query Marketplace <PayRent> history events successfully, %d events handled.", chainId, countPayRent)
 	log.Printf("[%d]: Query Marketplace <EndLease> history events successfully, %d events handled.", chainId, countEndLease)
 	log.Printf("[%d]: Query Marketplace <Withdraw> history events successfully, %d events handled.", chainId, countWithdraw)
+	log.Printf("[%d]: Query Marketplace pure <Transfer> history events successfully, %d events handled.", chainId, countTransfer)
 }
