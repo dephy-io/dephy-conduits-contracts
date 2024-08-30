@@ -20,7 +20,7 @@ contract Relist is Script {
     function setUp() public {
         ownerPrivateKey = vm.envUint("PRIVATE_KEY");
 
-        marketplace = Marketplace(0xEdeE6f1E0315d0872CF824A71BC9d5E3Ef5f0b10);
+        marketplace = Marketplace(0xe250f5d46395E42c9955E16CAc6C9dacCdD3B7dB);
 
         device = 0x407156bB8154C5BFA8808125cA981dc257eCed54; // set your device here
         minRentalDays = 2; // set min rental days

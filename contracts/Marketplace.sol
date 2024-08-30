@@ -119,7 +119,8 @@ contract Marketplace is IMarketplace, ApplicationBase, Ownable {
         uint256 maxRentalDays,
         address rentCurrency,
         uint256 dailyRent,
-        address rentRecipient
+        address rentRecipient,
+        string memory accessURI
     ) public onlyDeviceOwner(device) {
         require(
             _listings[device].status == ListingStatus.WithdrawnOrNotExist, // Never listed or withdrawn
@@ -141,6 +142,8 @@ contract Marketplace is IMarketplace, ApplicationBase, Ownable {
             rentRecipient: payable(rentRecipient),
             status: ListingStatus.Listing
         });
+
+        _setAccessURI(device, accessURI);
 
         emit List(
             msg.sender,
@@ -208,8 +211,7 @@ contract Marketplace is IMarketplace, ApplicationBase, Ownable {
         address device,
         address tenant,
         uint256 rentalDays,
-        uint256 prepaidRent,
-        string memory accessURI
+        uint256 prepaidRent
     ) public payable {
         require(
             _rentals[device].status == RentalStatus.EndedOrNotExist,
@@ -229,7 +231,7 @@ contract Marketplace is IMarketplace, ApplicationBase, Ownable {
         );
 
         // grant access to tenant
-        uint256 accessId = _grantAccess(tenant, device, accessURI);
+        uint256 accessId = _grantAccess(tenant, device);
 
         uint256 startTime = block.timestamp;
         uint256 endTime = block.timestamp + rentalDays * 1 days;

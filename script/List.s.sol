@@ -17,18 +17,20 @@ contract List is Script {
     address rentCurrency;
     uint256 dailyRent;
     address rentRecipient;
+    string accessURI;
 
     function setUp() public {
         ownerPrivateKey = vm.envUint("PRIVATE_KEY");
 
-        marketplace = Marketplace(0xEdeE6f1E0315d0872CF824A71BC9d5E3Ef5f0b10);
+        marketplace = Marketplace(0xe250f5d46395E42c9955E16CAc6C9dacCdD3B7dB);
 
-        device = 0xd34DfdE2bc41C7DaCBA160F10D61D4030971758C; // set your device here
+        device = 0x013e6d465077BD8b6EF99fAE5E953A4054070945; // set your device here
         minRentalDays = 1; // set min rental days
-        maxRentalDays = 10; // set max rental days
+        maxRentalDays = 99; // set max rental days
         rentCurrency = address(0); // only whitelisted currency, zero-address means eth(native token)
         dailyRent = 4*1e14; // set daily rent
         rentRecipient = vm.addr(ownerPrivateKey); // set rent receiver
+        accessURI = "http://";
     }
 
     function run() public {
@@ -38,7 +40,7 @@ contract List is Script {
             address(marketplace),
             tokenId
         );
-        marketplace.list(device, minRentalDays, maxRentalDays, rentCurrency, dailyRent, rentRecipient);
+        marketplace.list(device, minRentalDays, maxRentalDays, rentCurrency, dailyRent, rentRecipient, accessURI);
         vm.stopBroadcast();
     }
 }
