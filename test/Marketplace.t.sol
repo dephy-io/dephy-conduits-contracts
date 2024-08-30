@@ -174,7 +174,8 @@ contract MarketplaceTest is Test {
             maxRentalDays,
             rentCurrency,
             dailyRent,
-            rentRecipient
+            rentRecipient,
+            "http://test.com"
         );
         vm.stopPrank();
 
@@ -187,8 +188,7 @@ contract MarketplaceTest is Test {
             device,
             tenant,
             rentalDays,
-            prepaidRent,
-            "http://test.com"
+            prepaidRent
         );
 
         return marketplace.getRentalInfo(device);

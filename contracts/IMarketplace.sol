@@ -101,7 +101,8 @@ interface IMarketplace {
         uint256 maxRentalDays,
         address rentCurrency,
         uint256 dailyRent,
-        address rentRecipient
+        address rentRecipient,
+        string memory accessURI
     ) external;
 
     function delist(address device) external;
@@ -119,8 +120,7 @@ interface IMarketplace {
         address device,
         address tenant,
         uint256 rentalDays,
-        uint256 prepaidRent,
-        string memory accessURI
+        uint256 prepaidRent
     ) external payable;
 
     function payRent(
