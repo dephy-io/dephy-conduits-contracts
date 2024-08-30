@@ -29,7 +29,7 @@ func GetAvailableMarketDevices(chainId uint64) ([]model.DeviceInfo, error) {
 		Where("device_infos.device NOT IN (?)", subQuery).
 		Where("device_infos.chain_id = ?", chainId).
 		Preload("ListingInfo").
-		Preload("RentalInfo").
+		Preload("RentalInfo", "rental_status != ?", model.RSEndedOrNotExist).
 		Find(&devices).Error
 
 	if err != nil {
