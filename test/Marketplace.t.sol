@@ -16,6 +16,8 @@ contract MarketplaceTest is Test {
     uint256 tokenId; // device => {product, tokenId}
     address deviceOwner;
 
+    string accessURI = "http://test.com";
+
     Marketplace marketplace;
 
     address tenant;
@@ -90,6 +92,7 @@ contract MarketplaceTest is Test {
             uint256(rental.status),
             uint256(IMarketplace.RentalStatus.Renting)
         );
+        assertEq(marketplace.tokenURI(rental.accessId), accessURI);
     }
 
     function testRentWhenListingDelisted() public {
@@ -175,7 +178,7 @@ contract MarketplaceTest is Test {
             rentCurrency,
             dailyRent,
             rentRecipient,
-            "http://test.com"
+            accessURI
         );
         vm.stopPrank();
 
